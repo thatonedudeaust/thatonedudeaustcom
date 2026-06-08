@@ -791,16 +791,16 @@
   <script>
     const SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function initAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
       if (session) {
         document.getElementById('auth-nav-link').textContent = 'logout';
         document.getElementById('auth-nav-link').href = '#';
         document.getElementById('auth-nav-link').onclick = async (e) => {
           e.preventDefault();
-          await supabase.auth.signOut();
+          await sb.auth.signOut();
           location.reload();
         };
         document.getElementById('private-section').classList.add('visible');
