@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -556,6 +557,12 @@
       footer { padding: 2rem 1.5rem; flex-direction: column; gap: 1rem; text-align: center; }
       .contact-inner { padding: 2.5rem 1.5rem; }
     }
+
+    /* AUTH */
+    .private-section { display: none; }
+    .private-section.visible { display: block; }
+    #auth-nav-link { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; letter-spacing: 0.04em; transition: color 0.2s; }
+    #auth-nav-link:hover { color: var(--accent); }
   </style>
 </head>
 <body>
@@ -568,6 +575,7 @@
       <li><a href="#projects">projects</a></li>
       <li><a href="#skills">skills</a></li>
       <li><a href="#contact">contact</a></li>
+      <li><a href="/login.html" id="auth-nav-link">login</a></li>
     </ul>
   </nav>
 
@@ -745,6 +753,27 @@
       </div>
     </section>
 
+    <!-- PRIVATE SECTION (members only) -->
+    <div class="private-section" id="private-section">
+      <div class="divider"></div>
+      <section>
+        <div class="section-label reveal">05 — Members Only</div>
+        <div class="projects-grid reveal">
+          <div class="project-card">
+            <div>
+              <span class="project-tag">Private</span>
+              <div class="project-title">Secret Project Alpha</div>
+              <div class="project-desc">This is a private project only visible to logged-in members. Add your real private projects here!</div>
+              <div class="project-tech">
+                <span class="tech-pill">Private</span>
+              </div>
+            </div>
+            <div class="project-arrow">↗</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
   </main>
 
   <!-- FOOTER -->
@@ -760,6 +789,26 @@
   </footer>
 
   <script>
+    const SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    async function initAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        document.getElementById('auth-nav-link').textContent = 'logout';
+        document.getElementById('auth-nav-link').href = '#';
+        document.getElementById('auth-nav-link').onclick = async (e) => {
+          e.preventDefault();
+          await supabase.auth.signOut();
+          location.reload();
+        };
+        document.getElementById('private-section').classList.add('visible');
+      }
+    }
+
+    initAuth();
+
     function copyEmail() {
       navigator.clipboard.writeText('diddykongaustin@gmail.com').then(() => {
         const btn = document.getElementById('email-btn');
