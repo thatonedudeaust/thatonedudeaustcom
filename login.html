@@ -187,10 +187,10 @@
   <script>
     const SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // If already logged in, redirect home
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    sb.auth.getSession().then(({ data: { session } }) => {
       if (session) window.location.href = '/';
     });
 
@@ -209,7 +209,7 @@
       btn.textContent = 'Signing in...';
       errEl.style.display = 'none';
 
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await sb.auth.signInWithPassword({ email, password });
 
       if (error) {
         showError('Invalid email or password.');
