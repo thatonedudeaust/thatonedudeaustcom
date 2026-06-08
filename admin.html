@@ -405,10 +405,10 @@
     const SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
     const ADMIN_USER_ID = '18e1d5fe-be18-4012-8bb8-3c780f4a8eba';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     async function init() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await sb.auth.getSession();
 
       document.getElementById('loading').style.display = 'none';
 
@@ -426,7 +426,7 @@
       const tbody = document.getElementById('users-table');
       tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Loading...</td></tr>';
 
-      const { data: profiles, error } = await supabase.from('profiles').select('*');
+      const { data: profiles, error } = await sb.from('profiles').select('*');
 
       if (error || !profiles.length) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No users found.</td></tr>';
@@ -459,9 +459,7 @@
         return;
       }
 
-      // Use Supabase Admin API via edge function isn't available on static sites,
-      // so we use signUp with auto-confirm disabled
-      const { data, error } = await supabase.auth.signUp({ email, password });
+      const { data, error } = await sb.auth.signUp({ email, password });
 
       if (error) {
         errorEl.textContent = error.message;
@@ -469,9 +467,8 @@
         return;
       }
 
-      // Insert profile
       if (data.user) {
-        await supabase.from('profiles').insert({
+        await sb.from('profiles').insert({
           id: data.user.id,
           username: email.split('@')[0],
           is_admin: false
@@ -486,7 +483,7 @@
     }
 
     async function handleLogout() {
-      await supabase.auth.signOut();
+      await sb.auth.signOut();
       window.location.href = '/';
     }
 
