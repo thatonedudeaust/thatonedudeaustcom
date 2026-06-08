@@ -179,7 +179,7 @@
       <input type="password" id="password" placeholder="••••••••" />
     </div>
 
-    <button class="btn" id="login-btn" onclick="handleLogin()">Sign in →</button>
+    <button class="btn" id="login-btn">Sign in →</button>
     <div class="error-msg" id="error-msg"></div>
     <a href="/" class="back-link">← Back to home</a>
   </div>
@@ -225,6 +225,9 @@
       el.textContent = msg;
       el.style.display = 'block';
     }
+
+    // Attach button click
+    document.getElementById('login-btn').addEventListener('click', handleLogin);
 
     // Allow Enter key to submit
     document.addEventListener('keydown', (e) => {
