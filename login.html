@@ -185,9 +185,9 @@
   </div>
 
   <script>
-    const SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    var SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
+    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     // If already logged in, redirect home
     sb.auth.getSession().then(({ data: { session } }) => {
