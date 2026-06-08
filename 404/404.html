@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg2: #111113;
+      --border: rgba(255,255,255,0.07);
+      --text: #f0ede8;
+      --text-muted: #6b6b72;
+      --text-mid: #9a9aa3;
+      --accent: #c8f04a;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-display);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 2rem;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .glitch {
+      font-size: clamp(6rem, 20vw, 14rem);
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.04em;
+      color: var(--accent);
+      position: relative;
+      animation: fadeUp 0.6s ease forwards;
+      opacity: 0;
+    }
+
+    .glitch::before,
+    .glitch::after {
+      content: '404';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+    }
+
+    .glitch::before {
+      color: #ff5c5c;
+      clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+      animation: glitch1 3s infinite;
+      opacity: 0.6;
+    }
+
+    .glitch::after {
+      color: #5cb8ff;
+      clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+      animation: glitch2 3s infinite;
+      opacity: 0.6;
+    }
+
+    .error-label {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.2s;
+    }
+
+    h2 {
+      font-size: clamp(1.25rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.35s;
+    }
+
+    p {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      color: var(--text-mid);
+      line-height: 1.8;
+      max-width: 380px;
+      margin-bottom: 2.5rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.5s;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      border-radius: 4px;
+      background: var(--accent);
+      color: #0a0a0b;
+      border: 1px solid var(--accent);
+      transition: all 0.2s;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.65s;
+    }
+
+    .btn:hover {
+      background: transparent;
+      color: var(--accent);
+    }
+
+    .terminal {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.04em;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.8s;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 8px;
+      height: 1em;
+      background: var(--accent);
+      vertical-align: text-bottom;
+      animation: blink 1s step-end infinite;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    @keyframes glitch1 {
+      0%, 90%, 100% { transform: none; }
+      92% { transform: translateX(-4px); }
+      94% { transform: translateX(4px); }
+      96% { transform: translateX(-2px); }
+    }
+
+    @keyframes glitch2 {
+      0%, 90%, 100% { transform: none; }
+      93% { transform: translateX(4px); }
+      95% { transform: translateX(-4px); }
+      97% { transform: translateX(2px); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="error-label">Error — Page not found</div>
+  <div class="glitch">404</div>
+  <h2>Nothing here.</h2>
+  <p>Looks like this page doesn't exist — or it got lost somewhere in the signal noise.</p>
+  <a href="/" class="btn">← Back to home</a>
+
+  <div class="terminal">
+    ~ thatonedudeaust.com <span class="cursor"></span>
+  </div>
+
+</body>
+</html>
