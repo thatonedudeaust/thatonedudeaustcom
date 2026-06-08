@@ -491,13 +491,21 @@
         return;
       }
 
-      if (data.user) {
-        await sb.from('profiles').insert({
-          id: data.user.id,
+      // The fetch API returns the user object directly, not nested under data.user
+      const userId = data.id || (data.user && data.user.id);
+
+      if (userId) {
+        const { error: insertError } = await sb.from('profiles').insert({
+          id: userId,
           username: email.split('@')[0],
           email: email,
           is_admin: false
         });
+        if (insertError) {
+          errorEl.textContent = 'User created but profile failed: ' + insertError.message;
+          errorEl.style.display = 'block';
+          return;
+        }
       }
 
       successEl.textContent = `User ${email} created successfully!`;
