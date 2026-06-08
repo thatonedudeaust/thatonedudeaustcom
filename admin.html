@@ -403,8 +403,12 @@
   <script>
     var SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
     var SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
+    var SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3c3l0aHZncmVsdmtsZHN6ZGFjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MDkzOTA2MSwiZXhwIjoyMDk2NTE1MDYxfQ.69WZYCdD6vyWf7BZ357xjMLvaUt0Ax3qirBU9a7gwVc';
     var ADMIN_USER_ID = 'd006214b-bb03-42b5-8ad1-f3fede9df7ab';
     var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    var sbAdmin = window.supabase.createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    });
 
     async function init() {
       const { data: { session } } = await sb.auth.getSession();
@@ -470,7 +474,11 @@
         return;
       }
 
-      const { data, error } = await sb.auth.signUp({ email, password });
+      const { data, error } = await sbAdmin.auth.admin.createUser({
+        email: email,
+        password: password,
+        email_confirm: true
+      });
 
       if (error) {
         errorEl.textContent = error.message;
@@ -479,9 +487,6 @@
       }
 
       if (data.user) {
-        // Confirm the user immediately
-        await sb.rpc('confirm_user', { user_id: data.user.id }).catch(() => {});
-
         await sb.from('profiles').insert({
           id: data.user.id,
           username: email.split('@')[0],
@@ -490,7 +495,7 @@
         });
       }
 
-      successEl.textContent = `User ${email} created! They must confirm their email before logging in.`;
+      successEl.textContent = `User ${email} created successfully!`;
       successEl.style.display = 'block';
       document.getElementById('new-email').value = '';
       document.getElementById('new-password').value = '';
