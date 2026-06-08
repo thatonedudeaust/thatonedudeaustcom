@@ -385,12 +385,11 @@
                   <th>Email</th>
                   <th>Username</th>
                   <th>Role</th>
-                  <th>Created</th>
-                  <th></th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="users-table">
-                <tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Loading...</td></tr>
+                <tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Loading...</td></tr>
               </tbody>
             </table>
           </div>
@@ -424,24 +423,36 @@
 
     async function loadUsers() {
       const tbody = document.getElementById('users-table');
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Loading...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Loading...</td></tr>';
 
       const { data: profiles, error } = await sb.from('profiles').select('*');
 
-      if (error || !profiles.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No users found.</td></tr>';
+      if (error || !profiles || !profiles.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">No users found.</td></tr>';
         return;
       }
 
       tbody.innerHTML = profiles.map(p => `
-        <tr>
-          <td style="color:var(--text)">—</td>
+        <tr id="row-${p.id}">
+          <td style="color:var(--text)">${p.email || '—'}</td>
           <td style="color:var(--text)">${p.username}</td>
           <td><span class="badge ${p.is_admin ? 'badge-admin' : 'badge-user'}">${p.is_admin ? 'admin' : 'user'}</span></td>
-          <td>—</td>
-          <td></td>
+          <td>${p.id !== ADMIN_USER_ID ? `<button class="btn btn-danger" style="padding:0.3rem 0.8rem;font-size:0.7rem" onclick="deleteUser('${p.id}', '${p.email}')">Delete</button>` : '<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">—</span>'}</td>
         </tr>
       `).join('');
+    }
+
+    async function deleteUser(userId, userEmail) {
+      if (!confirm(`Are you sure you want to delete ${userEmail}? This cannot be undone.`)) return;
+
+      const { error } = await sb.from('profiles').delete().eq('id', userId);
+
+      if (error) {
+        alert('Failed to delete user: ' + error.message);
+        return;
+      }
+
+      document.getElementById('row-' + userId).remove();
     }
 
     async function createUser() {
@@ -468,14 +479,18 @@
       }
 
       if (data.user) {
+        // Confirm the user immediately
+        await sb.rpc('confirm_user', { user_id: data.user.id }).catch(() => {});
+
         await sb.from('profiles').insert({
           id: data.user.id,
           username: email.split('@')[0],
+          email: email,
           is_admin: false
         });
       }
 
-      successEl.textContent = `User ${email} created successfully!`;
+      successEl.textContent = `User ${email} created! They must confirm their email before logging in.`;
       successEl.style.display = 'block';
       document.getElementById('new-email').value = '';
       document.getElementById('new-password').value = '';
