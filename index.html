@@ -30,6 +30,28 @@
       --font-mono: 'IBM Plex Mono', monospace;
     }
 
+    /* THEMES */
+    [data-theme="blue"] {
+      --accent: #5cb8ff;
+      --accent-dim: rgba(92,184,255,0.12);
+      --accent-dim2: rgba(92,184,255,0.06);
+    }
+    [data-theme="crimson"] {
+      --accent: #ff5c5c;
+      --accent-dim: rgba(255,92,92,0.12);
+      --accent-dim2: rgba(255,92,92,0.06);
+    }
+    [data-theme="purple"] {
+      --accent: #b57aff;
+      --accent-dim: rgba(181,122,255,0.12);
+      --accent-dim2: rgba(181,122,255,0.06);
+    }
+    [data-theme="orange"] {
+      --accent: #ff9f4a;
+      --accent-dim: rgba(255,159,74,0.12);
+      --accent-dim2: rgba(255,159,74,0.06);
+    }
+
     html { scroll-behavior: smooth; }
 
     body {
@@ -563,6 +585,62 @@
     .private-section.visible { display: block; }
     #auth-nav-link { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; letter-spacing: 0.04em; transition: color 0.2s; }
     #auth-nav-link:hover { color: var(--accent); }
+
+    /* THEME SWITCHER */
+    .theme-switcher {
+      display: none;
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 200;
+      background: var(--bg2);
+      border: 1px solid var(--border-hover);
+      border-radius: 8px;
+      padding: 1rem 1.25rem;
+      flex-direction: column;
+      gap: 0.75rem;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+
+    .theme-switcher.visible { display: flex; }
+
+    .theme-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .theme-options {
+      display: flex;
+      gap: 0.6rem;
+    }
+
+    .theme-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .theme-swatch:hover { transform: scale(1.15); }
+    .theme-swatch.active { border-color: var(--text); }
+    .theme-swatch[data-theme="default"] { background: #c8f04a; }
+    .theme-swatch[data-theme="blue"]    { background: #5cb8ff; }
+    .theme-swatch[data-theme="crimson"] { background: #ff5c5c; }
+    .theme-swatch[data-theme="purple"]  { background: #b57aff; }
+    .theme-swatch[data-theme="orange"]  { background: #ff9f4a; }
+
+    .theme-name {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-mid);
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -776,6 +854,19 @@
 
   </main>
 
+  <!-- THEME SWITCHER (members only) -->
+  <div class="theme-switcher" id="theme-switcher">
+    <div class="theme-label">🎨 Theme</div>
+    <div class="theme-options">
+      <div class="theme-swatch active" data-theme="default" title="Default" onclick="setTheme('default')"></div>
+      <div class="theme-swatch" data-theme="blue" title="Midnight Blue" onclick="setTheme('blue')"></div>
+      <div class="theme-swatch" data-theme="crimson" title="Crimson" onclick="setTheme('crimson')"></div>
+      <div class="theme-swatch" data-theme="purple" title="Purple" onclick="setTheme('purple')"></div>
+      <div class="theme-swatch" data-theme="orange" title="Orange" onclick="setTheme('orange')"></div>
+    </div>
+    <div class="theme-name" id="theme-name">Default</div>
+  </div>
+
   <!-- FOOTER -->
   <footer>
     <p>© 2026 Aust — thatonedudeaust.com</p>
@@ -793,6 +884,30 @@
     var SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
     var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    var THEME_NAMES = {
+      'default': 'Default',
+      'blue': 'Midnight Blue',
+      'crimson': 'Crimson',
+      'purple': 'Purple',
+      'orange': 'Orange'
+    };
+
+    function applyTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme === 'default' ? '' : theme);
+      document.querySelectorAll('.theme-swatch').forEach(s => {
+        s.classList.toggle('active', s.dataset.theme === theme);
+      });
+      document.getElementById('theme-name').textContent = THEME_NAMES[theme] || 'Default';
+    }
+
+    async function setTheme(theme) {
+      applyTheme(theme);
+      const { data: { session } } = await sb.auth.getSession();
+      if (session) {
+        await sb.from('profiles').update({ theme: theme }).eq('id', session.user.id);
+      }
+    }
+
     async function initAuth() {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
@@ -804,6 +919,11 @@
           location.reload();
         };
         document.getElementById('private-section').classList.add('visible');
+        document.getElementById('theme-switcher').classList.add('visible');
+
+        // Load saved theme
+        const { data: profile } = await sb.from('profiles').select('theme').eq('id', session.user.id).single();
+        if (profile && profile.theme) applyTheme(profile.theme);
       }
     }
 
