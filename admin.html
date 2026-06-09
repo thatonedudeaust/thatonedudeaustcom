@@ -350,6 +350,26 @@
         <h1 class="page-title">Admin Panel</h1>
         <p class="page-subtitle">Manage users and site settings.</p>
 
+        <!-- Announcement -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Site Announcement</div>
+          </div>
+          <div class="panel-body">
+            <p style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-muted);margin-bottom:1rem">Shown to all visitors at the top of the site. Leave blank to remove it.</p>
+            <div class="field">
+              <label>Message</label>
+              <input type="text" id="announcement-text" placeholder="e.g. Site maintenance on Sunday at 2AM" />
+            </div>
+            <div style="display:flex;gap:0.75rem;margin-top:0.75rem">
+              <button class="btn btn-primary" onclick="saveAnnouncement()">Save →</button>
+              <button class="btn btn-danger" onclick="clearAnnouncement()">Clear</button>
+            </div>
+            <div class="msg msg-success" id="ann-success"></div>
+            <div class="msg msg-error" id="ann-error"></div>
+          </div>
+        </div>
+
         <!-- Create User -->
         <div class="panel">
           <div class="panel-header">
@@ -420,6 +440,52 @@
       document.getElementById('admin-content').style.display = 'block';
       document.getElementById('nav-user').textContent = session.user.email;
       loadUsers();
+      loadCurrentAnnouncement();
+    }
+
+    async function loadCurrentAnnouncement() {
+      const { data } = await sb.from('announcements').select('message').order('created_at', { ascending: false }).limit(1);
+      if (data && data.length > 0) {
+        document.getElementById('announcement-text').value = data[0].message;
+      }
+    }
+
+    async function saveAnnouncement() {
+      var message = document.getElementById('announcement-text').value.trim();
+      var successEl = document.getElementById('ann-success');
+      var errorEl = document.getElementById('ann-error');
+      successEl.style.display = 'none';
+      errorEl.style.display = 'none';
+
+      if (!message) {
+        errorEl.textContent = 'Please enter a message or use Clear to remove the announcement.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      // Delete old announcements and insert new one
+      await sb.from('announcements').delete().neq('id', 0);
+      const { error } = await sb.from('announcements').insert({ message: message });
+
+      if (error) {
+        errorEl.textContent = 'Failed to save: ' + error.message;
+        errorEl.style.display = 'block';
+      } else {
+        successEl.textContent = 'Announcement saved!';
+        successEl.style.display = 'block';
+      }
+    }
+
+    async function clearAnnouncement() {
+      var successEl = document.getElementById('ann-success');
+      var errorEl = document.getElementById('ann-error');
+      successEl.style.display = 'none';
+      errorEl.style.display = 'none';
+
+      await sb.from('announcements').delete().neq('id', 0);
+      document.getElementById('announcement-text').value = '';
+      successEl.textContent = 'Announcement cleared!';
+      successEl.style.display = 'block';
     }
 
     async function loadUsers() {
