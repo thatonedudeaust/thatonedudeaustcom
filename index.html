@@ -570,6 +570,27 @@
       margin: 0;
     }
 
+    /* ANNOUNCEMENT BAR */
+    #announcement-bar {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 200;
+      background: var(--accent);
+      color: #0a0a0b;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      padding: 0.6rem 3rem;
+      text-align: center;
+    }
+
+    #announcement-bar.visible { display: block; }
+
+    /* Push nav down when bar is visible */
+    body.has-announcement nav { top: 2.2rem; }
+
     /* RESPONSIVE */
     @media (max-width: 768px) {
       nav { padding: 1rem 1.5rem; }
@@ -644,6 +665,9 @@
   </style>
 </head>
 <body>
+
+  <!-- ANNOUNCEMENT BAR -->
+  <div id="announcement-bar"></div>
 
   <!-- NAV -->
   <nav>
@@ -908,6 +932,16 @@
       }
     }
 
+    async function loadAnnouncement() {
+      const { data } = await sb.from('announcements').select('message').order('created_at', { ascending: false }).limit(1);
+      if (data && data.length > 0) {
+        var bar = document.getElementById('announcement-bar');
+        bar.textContent = data[0].message;
+        bar.classList.add('visible');
+        document.body.classList.add('has-announcement');
+      }
+    }
+
     async function initAuth() {
       const { data: { session } } = await sb.auth.getSession();
       if (session) {
@@ -928,6 +962,7 @@
     }
 
     initAuth();
+    loadAnnouncement();
 
     function copyEmail() {
       navigator.clipboard.writeText('diddykongaustin@gmail.com').then(() => {
