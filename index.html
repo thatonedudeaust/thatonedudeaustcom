@@ -901,6 +901,7 @@
       <a href="https://www.ebay.com/usr/thatonedudeaust" target="_blank">eBay</a>
       <a href="https://thatonedudeaust.github.io/weather-radio" target="_blank">Weather Radio</a>
     </div>
+    <p id="visitor-count" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">👁 — visitors</p>
   </footer>
 
   <script>
@@ -963,6 +964,20 @@
 
     initAuth();
     loadAnnouncement();
+    trackVisit();
+
+    async function trackVisit() {
+      // Only count once per session
+      if (!sessionStorage.getItem('visited')) {
+        sessionStorage.setItem('visited', 'true');
+        await sb.rpc('increment_visitors');
+      }
+      // Always show current count
+      var { data } = await sb.from('visitors').select('count').single();
+      if (data) {
+        document.getElementById('visitor-count').textContent = '👁 ' + data.count.toLocaleString() + ' visitors';
+      }
+    }
 
     function copyEmail() {
       navigator.clipboard.writeText('diddykongaustin@gmail.com').then(() => {
