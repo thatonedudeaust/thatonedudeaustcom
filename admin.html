@@ -432,7 +432,15 @@
 
       document.getElementById('loading').style.display = 'none';
 
-      if (!session || session.user.id !== ADMIN_USER_ID) {
+      if (!session) {
+        document.getElementById('forbidden').style.display = 'flex';
+        return;
+      }
+
+      // Check if user is admin
+      const { data: profile } = await sb.from('profiles').select('is_admin').eq('id', session.user.id).single();
+
+      if (!profile || !profile.is_admin) {
         document.getElementById('forbidden').style.display = 'flex';
         return;
       }
