@@ -405,7 +405,7 @@
                   <th>Email</th>
                   <th>Username</th>
                   <th>Role</th>
-                  <th>Action</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="users-table">
@@ -490,12 +490,12 @@
 
     async function loadUsers() {
       const tbody = document.getElementById('users-table');
-      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">Loading...</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Loading...</td></tr>';
 
       const { data: profiles, error } = await sb.from('profiles').select('*');
 
       if (error || !profiles || !profiles.length) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted)">No users found.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No users found.</td></tr>';
         return;
       }
 
@@ -504,9 +504,28 @@
           <td style="color:var(--text)">${p.email || '—'}</td>
           <td style="color:var(--text)">${p.username}</td>
           <td><span class="badge ${p.is_admin ? 'badge-admin' : 'badge-user'}">${p.is_admin ? 'admin' : 'user'}</span></td>
-          <td>${p.id !== ADMIN_USER_ID ? `<button class="btn btn-danger" style="padding:0.3rem 0.8rem;font-size:0.7rem" onclick="deleteUser('${p.id}', '${p.email}')">Delete</button>` : '<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">—</span>'}</td>
+          <td>
+            ${p.id !== ADMIN_USER_ID ? `
+              <div style="display:flex;gap:0.5rem">
+                <button class="btn btn-ghost" style="padding:0.3rem 0.8rem;font-size:0.7rem" onclick="toggleRole('${p.id}', ${p.is_admin})">
+                  ${p.is_admin ? 'Make user' : 'Make admin'}
+                </button>
+                <button class="btn btn-danger" style="padding:0.3rem 0.8rem;font-size:0.7rem" onclick="deleteUser('${p.id}', '${p.email}')">Delete</button>
+              </div>
+            ` : '<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">Owner</span>'}
+          </td>
         </tr>
       `).join('');
+    }
+
+    async function toggleRole(userId, currentlyAdmin) {
+      const newRole = !currentlyAdmin;
+      const { error } = await sb.from('profiles').update({ is_admin: newRole }).eq('id', userId);
+      if (error) {
+        alert('Failed to update role: ' + error.message);
+        return;
+      }
+      loadUsers();
     }
 
     async function deleteUser(userId, userEmail) {
