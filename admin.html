@@ -415,10 +415,38 @@
           </div>
         </div>
 
-        <a href="/" class="back-link">← Back to site</a>
+        <a href="/" class="back-link">← Back to site</a> &nbsp;&nbsp; <a href="/changelog.html" class="back-link" target="_blank">View changelog →</a>
       </div>
     </main>
   </div>
+
+        <!-- Changelog -->
+        <div class="panel" style="max-width:1000px;margin:0 auto 2rem;position:relative;z-index:1">
+          <div class="panel-header">
+            <div class="panel-title">Changelog</div>
+            <button class="btn btn-ghost" onclick="loadChangelogAdmin()" style="font-size:0.72rem;padding:0.4rem 0.9rem">↻ Refresh</button>
+          </div>
+          <div class="panel-body">
+            <p style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-muted);margin-bottom:1.25rem">Add a new entry to the public changelog.</p>
+            <div class="form-grid">
+              <div class="field">
+                <label>Version</label>
+                <input type="text" id="cl-version" placeholder="e.g. v1.0, v2.3, Jan 2026" />
+              </div>
+              <div class="field">
+                <label>Description</label>
+                <input type="text" id="cl-desc" placeholder="What changed?" />
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="addChangelogEntry()">Add entry →</button>
+            <div class="msg msg-success" id="cl-success"></div>
+            <div class="msg msg-error" id="cl-error"></div>
+
+            <div style="margin-top:2rem;border-top:1px solid var(--border);padding-top:1.5rem">
+              <div id="cl-list" style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted)">Loading...</div>
+            </div>
+          </div>
+        </div>
 
   <script>
     var SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
@@ -623,7 +651,64 @@
       window.location.href = '/';
     }
 
+    async function loadChangelogAdmin() {
+      var list = document.getElementById('cl-list');
+      var { data, error } = await sb.from('changelog').select('*').order('created_at', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        list.innerHTML = 'No entries yet.';
+        return;
+      }
+
+      list.innerHTML = data.map(e => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid var(--border)">
+          <div>
+            <span style="color:var(--accent);margin-right:0.75rem">${e.version}</span>
+            <span style="color:var(--text-mid)">${e.description}</span>
+            <span style="color:var(--text-muted);margin-left:0.75rem;font-size:0.72rem">${new Date(e.created_at).toLocaleDateString()}</span>
+          </div>
+          <button class="btn btn-danger" style="padding:0.25rem 0.7rem;font-size:0.68rem;flex-shrink:0;margin-left:1rem" onclick="deleteChangelogEntry(${e.id})">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    async function addChangelogEntry() {
+      var version = document.getElementById('cl-version').value.trim();
+      var desc = document.getElementById('cl-desc').value.trim();
+      var successEl = document.getElementById('cl-success');
+      var errorEl = document.getElementById('cl-error');
+      successEl.style.display = 'none';
+      errorEl.style.display = 'none';
+
+      if (!version || !desc) {
+        errorEl.textContent = 'Please fill in both fields.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      var { error } = await sb.from('changelog').insert({ version: version, description: desc });
+
+      if (error) {
+        errorEl.textContent = 'Failed to add entry: ' + error.message;
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      successEl.textContent = 'Entry added!';
+      successEl.style.display = 'block';
+      document.getElementById('cl-version').value = '';
+      document.getElementById('cl-desc').value = '';
+      loadChangelogAdmin();
+    }
+
+    async function deleteChangelogEntry(id) {
+      if (!confirm('Delete this changelog entry?')) return;
+      await sb.from('changelog').delete().eq('id', id);
+      loadChangelogAdmin();
+    }
+
     init();
+    loadChangelogAdmin();
   </script>
 
 </body>
