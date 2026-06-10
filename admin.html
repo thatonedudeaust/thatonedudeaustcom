@@ -392,6 +392,30 @@
           </div>
         </div>
 
+        <!-- Account Requests -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">Account Requests <span id="requests-badge" style="display:none;background:var(--accent);color:#0a0a0b;font-size:0.68rem;padding:0.15rem 0.5rem;border-radius:100px;margin-left:0.5rem;font-family:var(--font-mono)"></span></div>
+            <button class="btn btn-ghost" onclick="loadRequests()" style="font-size:0.72rem;padding:0.4rem 0.9rem">↻ Refresh</button>
+          </div>
+          <div class="panel-body" style="padding:0">
+            <table>
+              <thead>
+                <tr>
+                  <th>Email</th>
+                  <th>Reason</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="requests-table">
+                <tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
         <!-- Users List -->
         <div class="panel">
           <div class="panel-header">
@@ -646,6 +670,127 @@
       loadUsers();
     }
 
+    async function loadRequests() {
+      var tbody = document.getElementById('requests-table');
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Loading...</td></tr>';
+
+      var { data, error } = await sb.from('account_requests').select('*').order('created_at', { ascending: false });
+
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No requests yet.</td></tr>';
+        document.getElementById('requests-badge').style.display = 'none';
+        return;
+      }
+
+      var pending = data.filter(r => r.status === 'pending').length;
+      var badge = document.getElementById('requests-badge');
+      if (pending > 0) {
+        badge.textContent = pending + ' pending';
+        badge.style.display = 'inline';
+      } else {
+        badge.style.display = 'none';
+      }
+
+      tbody.innerHTML = data.map(r => `
+        <tr>
+          <td style="color:var(--text)">${r.email}</td>
+          <td style="color:var(--text-mid);max-width:200px;word-wrap:break-word">${r.reason}</td>
+          <td style="color:var(--text-muted);font-size:0.75rem">${new Date(r.created_at).toLocaleDateString()}</td>
+          <td>
+            <span style="font-family:var(--font-mono);font-size:0.72rem;padding:0.2rem 0.6rem;border-radius:3px;
+              background:${r.status === 'pending' ? 'rgba(255,159,74,0.1)' : r.status === 'approved' ? 'rgba(200,240,74,0.1)' : 'rgba(255,92,92,0.1)'};
+              color:${r.status === 'pending' ? '#ff9f4a' : r.status === 'approved' ? 'var(--accent)' : 'var(--red)'};
+              border:1px solid ${r.status === 'pending' ? 'rgba(255,159,74,0.2)' : r.status === 'approved' ? 'rgba(200,240,74,0.2)' : 'rgba(255,92,92,0.2)'}">
+              ${r.status}
+            </span>
+          </td>
+          <td>
+            ${r.status === 'pending' ? `
+              <div style="display:flex;gap:0.5rem">
+                <button class="btn btn-primary" style="padding:0.3rem 0.8rem;font-size:0.7rem" onclick="approveRequest(${r.id}, '${r.email}', '${r.password}')">Approve</button>
+                <button class="btn btn-danger" style="padding:0.3rem 0.8rem;font-size:0.7rem" onclick="denyRequest(${r.id}, '${r.email}')">Deny</button>
+              </div>
+            ` : `<span style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">${r.status}</span>`}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function approveRequest(id, email, password) {
+      if (!confirm('Approve account for ' + email + '? This will create their account and send them an email.')) return;
+
+      // Create the user account
+      var createRes = await fetch(SUPABASE_URL + '/auth/v1/admin/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SERVICE_ROLE_KEY,
+          'Authorization': 'Bearer ' + SERVICE_ROLE_KEY
+        },
+        body: JSON.stringify({ email: email, password: password, email_confirm: true })
+      });
+
+      var userData = await createRes.json();
+
+      if (!createRes.ok) {
+        alert('Failed to create account: ' + (userData.msg || userData.message || 'Unknown error'));
+        return;
+      }
+
+      var userId = userData.id;
+
+      // Insert profile
+      await fetch(SUPABASE_URL + '/rest/v1/profiles', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SERVICE_ROLE_KEY,
+          'Authorization': 'Bearer ' + SERVICE_ROLE_KEY,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ id: userId, username: email.split('@')[0], email: email, is_admin: false })
+      });
+
+      // Send approval email
+      await fetch(SUPABASE_URL + '/auth/v1/admin/users/' + userId, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SERVICE_ROLE_KEY,
+          'Authorization': 'Bearer ' + SERVICE_ROLE_KEY
+        },
+        body: JSON.stringify({ email_confirm: true })
+      });
+
+      // Mark request as approved
+      await sb.from('account_requests').update({ status: 'approved' }).eq('id', id);
+
+      // Send notification email via Supabase
+      await fetch(SUPABASE_URL + '/auth/v1/admin/users/' + userId + '/email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SERVICE_ROLE_KEY,
+          'Authorization': 'Bearer ' + SERVICE_ROLE_KEY
+        },
+        body: JSON.stringify({
+          email: email,
+          subject: 'Your account has been approved!',
+          body: 'Hi! Your account request for thatonedudeaust.com has been approved. You can now log in at https://thatonedudeaust.com/login.html using the email and password you provided.'
+        })
+      });
+
+      alert('Account approved and email sent to ' + email + '!');
+      loadRequests();
+      loadUsers();
+    }
+
+    async function denyRequest(id, email) {
+      if (!confirm('Deny request from ' + email + '?')) return;
+      await sb.from('account_requests').update({ status: 'denied' }).eq('id', id);
+      loadRequests();
+    }
+
     async function handleLogout() {
       await sb.auth.signOut();
       window.location.href = '/';
@@ -709,6 +854,7 @@
 
     init();
     loadChangelogAdmin();
+    loadRequests();
   </script>
 
 </body>
