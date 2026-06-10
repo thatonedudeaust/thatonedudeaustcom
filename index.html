@@ -570,6 +570,70 @@
       margin: 0;
     }
 
+    /* WEATHER WIDGET */
+    .weather-widget {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      margin-top: 0.4rem;
+    }
+
+    .weather-display {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .weather-display:hover { color: var(--accent); }
+
+    .weather-temp {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .weather-zip-form {
+      display: none;
+      gap: 0.4rem;
+      align-items: center;
+      margin-top: 0.25rem;
+    }
+
+    .weather-zip-form.visible { display: flex; }
+
+    .weather-zip-input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 3px;
+      padding: 0.25rem 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text);
+      outline: none;
+      width: 80px;
+      transition: border-color 0.2s;
+    }
+
+    .weather-zip-input:focus { border-color: var(--accent); }
+
+    .weather-zip-btn {
+      background: var(--accent);
+      color: #0a0a0b;
+      border: none;
+      border-radius: 3px;
+      padding: 0.25rem 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .weather-zip-btn:hover { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+
     /* ANNOUNCEMENT BAR */
     #announcement-bar {
       display: none;
@@ -671,7 +735,18 @@
 
   <!-- NAV -->
   <nav>
-    <a href="#hero" class="nav-logo">thatonedudeaust.com</a>
+    <div>
+      <a href="#hero" class="nav-logo">thatonedudeaust.com</a>
+      <div class="weather-widget">
+        <div class="weather-display" onclick="toggleZipForm()" id="weather-display">
+          📡 <span id="weather-text">enter zip for weather</span>
+        </div>
+        <div class="weather-zip-form" id="weather-zip-form">
+          <input class="weather-zip-input" type="text" id="weather-zip" placeholder="08054" maxlength="5" />
+          <button class="weather-zip-btn" onclick="fetchWeather()">Go</button>
+        </div>
+      </div>
+    </div>
     <ul class="nav-links">
       <li><a href="#about">about</a></li>
       <li><a href="#projects">projects</a></li>
@@ -962,6 +1037,72 @@
         if (profile && profile.theme) applyTheme(profile.theme);
       }
     }
+
+    function toggleZipForm() {
+      var form = document.getElementById('weather-zip-form');
+      form.classList.toggle('visible');
+      if (form.classList.contains('visible')) {
+        document.getElementById('weather-zip').focus();
+      }
+    }
+
+    async function fetchWeather() {
+      var zip = document.getElementById('weather-zip').value.trim();
+      var display = document.getElementById('weather-text');
+
+      if (zip.length !== 5 || isNaN(zip)) {
+        display.textContent = 'invalid zip';
+        return;
+      }
+
+      display.textContent = 'loading...';
+      document.getElementById('weather-zip-form').classList.remove('visible');
+      localStorage.setItem('weather-zip', zip);
+
+      try {
+        // Convert zip to lat/lon using open-meteo geocoding
+        var geoRes = await fetch('https://geocoding-api.open-meteo.com/v1/search?name=' + zip + '&count=1&language=en&format=json&country_code=US');
+        var geoData = await geoRes.json();
+
+        if (!geoData.results || geoData.results.length === 0) {
+          display.textContent = 'zip not found';
+          return;
+        }
+
+        var lat = geoData.results[0].latitude;
+        var lon = geoData.results[0].longitude;
+        var city = geoData.results[0].name;
+
+        // Get NWS grid point
+        var pointRes = await fetch('https://api.weather.gov/points/' + lat.toFixed(4) + ',' + lon.toFixed(4));
+        var pointData = await pointRes.json();
+        var forecastUrl = pointData.properties.forecastHourly;
+
+        // Get current conditions
+        var forecastRes = await fetch(forecastUrl);
+        var forecastData = await forecastRes.json();
+        var current = forecastData.properties.periods[0];
+
+        var temp = current.temperature + '°' + current.temperatureUnit;
+        var conditions = current.shortForecast;
+
+        display.innerHTML = '<span class="weather-temp">' + temp + '</span> · ' + conditions + ' · ' + city;
+      } catch (e) {
+        display.textContent = 'weather unavailable';
+      }
+    }
+
+    // Auto-load saved zip on page load
+    window.addEventListener('load', function() {
+      var savedZip = localStorage.getItem('weather-zip');
+      if (savedZip) {
+        document.getElementById('weather-zip').value = savedZip;
+        fetchWeather();
+      }
+      document.getElementById('weather-zip').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') fetchWeather();
+      });
+    });
 
     initAuth();
     loadAnnouncement();
