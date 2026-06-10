@@ -1057,7 +1057,6 @@
 
       display.textContent = 'loading...';
       document.getElementById('weather-zip-form').classList.remove('visible');
-      localStorage.setItem('weather-zip', zip);
 
       try {
         // Convert zip to lat/lon using open-meteo geocoding
@@ -1092,13 +1091,8 @@
       }
     }
 
-    // Auto-load saved zip on page load
+    // Add enter key support for zip input
     window.addEventListener('load', function() {
-      var savedZip = localStorage.getItem('weather-zip');
-      if (savedZip) {
-        document.getElementById('weather-zip').value = savedZip;
-        fetchWeather();
-      }
       document.getElementById('weather-zip').addEventListener('keydown', function(e) {
         if (e.key === 'Enter') fetchWeather();
       });
