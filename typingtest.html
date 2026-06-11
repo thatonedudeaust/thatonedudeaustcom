@@ -165,6 +165,8 @@
       line-height: 2;
       letter-spacing: 0.02em;
       user-select: none;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
     .char { position: relative; }
@@ -368,21 +370,21 @@
 
   <script>
     var PROMPTS = [
-      "const fetchData = async (url) => { const res = await fetch(url); return res.json(); };",
-      "function debounce(fn, delay) { let timer; return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); }; }",
-      "git commit -m 'fix: resolve null pointer exception in auth middleware'",
-      "SELECT users.name, COUNT(orders.id) AS total FROM users LEFT JOIN orders ON users.id = orders.user_id GROUP BY users.name;",
-      "npm install && npm run build && npm run deploy",
-      "docker build -t myapp:latest . && docker run -p 3000:3000 myapp:latest",
-      "const [data, setData] = useState(null); useEffect(() => { fetchData().then(setData); }, []);",
-      "if (process.env.NODE_ENV === 'production') { app.use(helmet()); app.use(compression()); }",
-      "Object.keys(obj).filter(key => obj[key] !== null).reduce((acc, key) => ({ ...acc, [key]: obj[key] }), {});",
-      "ssh -i ~/.ssh/id_rsa user@192.168.1.1 -p 22 -L 8080:localhost:80",
-      "try { const token = jwt.verify(req.headers.authorization, process.env.SECRET); } catch (err) { return res.status(401).json({ error: 'Unauthorized' }); }",
-      "git checkout -b feature/weather-widget && git push --set-upstream origin feature/weather-widget",
-      "const socket = new WebSocket('wss://api.example.com'); socket.onmessage = (e) => console.log(JSON.parse(e.data));",
-      "ALTER TABLE users ADD COLUMN last_login TIMESTAMPTZ DEFAULT NOW();",
-      "curl -X POST https://api.example.com/v1/alerts -H 'Content-Type: application/json' -d '{\"type\":\"EAS\",\"severity\":\"extreme\"}'",
+      "This site was built from scratch using only HTML, CSS, and JavaScript.",
+      "RAGE Alerting Systems is a Roblox project dedicated to realistic EAS simulation.",
+      "The weather radio app pulls live data directly from the National Weather Service API.",
+      "This site has a members only section with custom color themes that save to your account.",
+      "The admin panel lets the owner manage users, announcements, and the changelog.",
+      "DECtalk was the voice synthesizer used in real NOAA weather radio broadcasts until 2016.",
+      "Visitors can request an account and the owner can approve or deny it from the admin panel.",
+      "The changelog page keeps a public log of every update made to this site.",
+      "The weather widget on this site lets you look up current conditions by zip code.",
+      "This site uses Supabase to handle user accounts, login, and database storage.",
+      "The 404 page on this site has a glitchy animated effect when you visit a page that does not exist.",
+      "GitHub Pages hosts this site and every push to the repo automatically deploys it.",
+      "The NOAA weather radio app uses DECtalk WASM to speak alerts out loud in the browser.",
+      "Account requests show up in the admin panel with the reason the user provided.",
+      "The visitor counter in the footer tracks how many people have visited this site.",
     ];
 
     var currentPrompt = '';
