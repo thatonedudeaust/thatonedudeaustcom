@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Typing Test — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg2: #111113;
+      --bg3: #18181c;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8;
+      --text-muted: #6b6b72;
+      --text-mid: #9a9aa3;
+      --accent: #c8f04a;
+      --red: #ff5c5c;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-display);
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 3rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,11,0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-decoration: none;
+    }
+
+    .nav-back {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-back:hover { color: var(--accent); }
+
+    main {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 5rem 3rem;
+    }
+
+    .page-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1;
+      margin-bottom: 1rem;
+      animation: fadeUp 0.5s ease forwards 0.1s;
+      opacity: 0;
+    }
+
+    .page-desc {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 3rem;
+      line-height: 1.7;
+      animation: fadeUp 0.5s ease forwards 0.2s;
+      opacity: 0;
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      animation: fadeUp 0.5s ease forwards 0.3s;
+      opacity: 0;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .stat-val {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-lbl {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    /* TYPING AREA */
+    .typing-container {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2.5rem;
+      margin-bottom: 1.5rem;
+      cursor: text;
+      animation: fadeUp 0.5s ease forwards 0.4s;
+      opacity: 0;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+
+    .typing-container.active { border-color: var(--accent); }
+    .typing-container.error  { border-color: var(--red); }
+
+    .prompt-text {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      line-height: 2;
+      letter-spacing: 0.02em;
+      user-select: none;
+    }
+
+    .char { position: relative; }
+    .char.correct { color: var(--accent); }
+    .char.incorrect { color: var(--red); text-decoration: underline; }
+    .char.pending { color: var(--text-muted); }
+
+    .char.cursor::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -2px;
+      width: 100%;
+      height: 2px;
+      background: var(--accent);
+      animation: blink 1s step-end infinite;
+    }
+
+    .hidden-input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+      width: 1px;
+      height: 1px;
+    }
+
+    /* CONTROLS */
+    .controls {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      animation: fadeUp 0.5s ease forwards 0.5s;
+      opacity: 0;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.7rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #0a0a0b;
+      border: 1px solid var(--accent);
+    }
+
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-hover);
+    }
+
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    .hint {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    /* RESULTS */
+    .results {
+      display: none;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3rem;
+      text-align: center;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    .results.visible { display: block; }
+
+    .result-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 2rem;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .result-box {
+      background: var(--bg3);
+      padding: 1.5rem;
+    }
+
+    .result-val {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+
+    .result-lbl {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      main { padding: 3rem 1.5rem; }
+      .result-grid { grid-template-columns: 1fr; }
+      .stats-bar { gap: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="/" class="nav-logo">thatonedudeaust.com</a>
+    <a href="/" class="nav-back">← Back to home</a>
+  </nav>
+
+  <main>
+    <p class="page-eyebrow">Mini game</p>
+    <h1>Typing Test</h1>
+    <p class="page-desc">Click the text below and start typing. Tech & coding themed prompts.</p>
+
+    <div class="stats-bar">
+      <div class="stat">
+        <div class="stat-val" id="live-wpm">0</div>
+        <div class="stat-lbl">WPM</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="live-acc">—</div>
+        <div class="stat-lbl">Accuracy</div>
+      </div>
+      <div class="stat">
+        <div class="stat-val" id="live-time">0.0s</div>
+        <div class="stat-lbl">Time</div>
+      </div>
+    </div>
+
+    <div class="typing-container" id="typing-container" onclick="focusInput()">
+      <div class="prompt-text" id="prompt-text"></div>
+      <input class="hidden-input" id="hidden-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+    </div>
+
+    <!-- Results -->
+    <div class="results" id="results">
+      <div class="result-title">Test complete! 🎉</div>
+      <div class="result-grid">
+        <div class="result-box">
+          <div class="result-val" id="res-wpm">0</div>
+          <div class="result-lbl">WPM</div>
+        </div>
+        <div class="result-box">
+          <div class="result-val" id="res-acc">0%</div>
+          <div class="result-lbl">Accuracy</div>
+        </div>
+        <div class="result-box">
+          <div class="result-val" id="res-time">0s</div>
+          <div class="result-lbl">Time</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="newTest()">Try again →</button>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-ghost" onclick="newTest()">↻ New prompt</button>
+      <span class="hint">Click the text box to start · Tab + Enter to restart</span>
+    </div>
+  </main>
+
+  <script>
+    var PROMPTS = [
+      "const fetchData = async (url) => { const res = await fetch(url); return res.json(); };",
+      "function debounce(fn, delay) { let timer; return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); }; }",
+      "git commit -m 'fix: resolve null pointer exception in auth middleware'",
+      "SELECT users.name, COUNT(orders.id) AS total FROM users LEFT JOIN orders ON users.id = orders.user_id GROUP BY users.name;",
+      "npm install && npm run build && npm run deploy",
+      "docker build -t myapp:latest . && docker run -p 3000:3000 myapp:latest",
+      "const [data, setData] = useState(null); useEffect(() => { fetchData().then(setData); }, []);",
+      "if (process.env.NODE_ENV === 'production') { app.use(helmet()); app.use(compression()); }",
+      "Object.keys(obj).filter(key => obj[key] !== null).reduce((acc, key) => ({ ...acc, [key]: obj[key] }), {});",
+      "ssh -i ~/.ssh/id_rsa user@192.168.1.1 -p 22 -L 8080:localhost:80",
+      "try { const token = jwt.verify(req.headers.authorization, process.env.SECRET); } catch (err) { return res.status(401).json({ error: 'Unauthorized' }); }",
+      "git checkout -b feature/weather-widget && git push --set-upstream origin feature/weather-widget",
+      "const socket = new WebSocket('wss://api.example.com'); socket.onmessage = (e) => console.log(JSON.parse(e.data));",
+      "ALTER TABLE users ADD COLUMN last_login TIMESTAMPTZ DEFAULT NOW();",
+      "curl -X POST https://api.example.com/v1/alerts -H 'Content-Type: application/json' -d '{\"type\":\"EAS\",\"severity\":\"extreme\"}'",
+    ];
+
+    var currentPrompt = '';
+    var typedChars = [];
+    var startTime = null;
+    var timerInterval = null;
+    var isFinished = false;
+
+    function newTest() {
+      var idx = Math.floor(Math.random() * PROMPTS.length);
+      currentPrompt = PROMPTS[idx];
+      typedChars = [];
+      startTime = null;
+      isFinished = false;
+      clearInterval(timerInterval);
+
+      document.getElementById('live-wpm').textContent = '0';
+      document.getElementById('live-acc').textContent = '—';
+      document.getElementById('live-time').textContent = '0.0s';
+      document.getElementById('hidden-input').value = '';
+      document.getElementById('results').classList.remove('visible');
+      document.getElementById('typing-container').style.display = 'block';
+      document.getElementById('typing-container').className = 'typing-container';
+
+      renderPrompt();
+      focusInput();
+    }
+
+    function renderPrompt() {
+      var el = document.getElementById('prompt-text');
+      el.innerHTML = currentPrompt.split('').map((ch, i) => {
+        var state = 'pending';
+        if (i < typedChars.length) {
+          state = typedChars[i] === ch ? 'correct' : 'incorrect';
+        } else if (i === typedChars.length) {
+          state = 'cursor pending';
+        }
+        return '<span class="char ' + state + '">' + (ch === ' ' ? '&nbsp;' : ch.replace('<', '&lt;').replace('>', '&gt;')) + '</span>';
+      }).join('');
+    }
+
+    function focusInput() {
+      document.getElementById('hidden-input').focus();
+    }
+
+    document.getElementById('hidden-input').addEventListener('input', function(e) {
+      if (isFinished) return;
+
+      var val = this.value;
+      typedChars = val.split('');
+
+      // Start timer on first keypress
+      if (!startTime && val.length > 0) {
+        startTime = Date.now();
+        timerInterval = setInterval(updateLiveStats, 100);
+      }
+
+      document.getElementById('typing-container').className = 'typing-container active';
+
+      // Check for errors
+      var hasError = typedChars.some((ch, i) => ch !== currentPrompt[i]);
+      if (hasError) document.getElementById('typing-container').className = 'typing-container error';
+
+      renderPrompt();
+      updateLiveStats();
+
+      // Check completion
+      if (val === currentPrompt) {
+        finishTest();
+      }
+
+      // Prevent typing beyond prompt length
+      if (val.length > currentPrompt.length) {
+        this.value = val.slice(0, currentPrompt.length);
+        typedChars = this.value.split('');
+        renderPrompt();
+      }
+    });
+
+    document.getElementById('hidden-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && e.target.id !== 'hidden-input') {
+        newTest();
+      }
+    });
+
+    function updateLiveStats() {
+      if (!startTime) return;
+      var elapsed = (Date.now() - startTime) / 1000;
+      var words = typedChars.length / 5;
+      var wpm = elapsed > 0 ? Math.round((words / elapsed) * 60) : 0;
+      var correct = typedChars.filter((ch, i) => ch === currentPrompt[i]).length;
+      var acc = typedChars.length > 0 ? Math.round((correct / typedChars.length) * 100) : 0;
+
+      document.getElementById('live-wpm').textContent = wpm;
+      document.getElementById('live-acc').textContent = acc + '%';
+      document.getElementById('live-time').textContent = elapsed.toFixed(1) + 's';
+    }
+
+    function finishTest() {
+      isFinished = true;
+      clearInterval(timerInterval);
+
+      var elapsed = (Date.now() - startTime) / 1000;
+      var words = currentPrompt.length / 5;
+      var wpm = Math.round((words / elapsed) * 60);
+      var correct = typedChars.filter((ch, i) => ch === currentPrompt[i]).length;
+      var acc = Math.round((correct / typedChars.length) * 100);
+
+      document.getElementById('res-wpm').textContent = wpm;
+      document.getElementById('res-acc').textContent = acc + '%';
+      document.getElementById('res-time').textContent = elapsed.toFixed(1) + 's';
+
+      document.getElementById('typing-container').style.display = 'none';
+      document.getElementById('results').classList.add('visible');
+    }
+
+    // Init
+    newTest();
+  </script>
+
+</body>
+</html>
