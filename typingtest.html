@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="/supabase.min.js"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -55,22 +56,8 @@
       backdrop-filter: blur(12px);
     }
 
-    .nav-logo {
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: var(--accent);
-      letter-spacing: 0.05em;
-      text-decoration: none;
-    }
-
-    .nav-back {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
-
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+    .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
     .nav-back:hover { color: var(--accent); }
 
     main {
@@ -81,68 +68,15 @@
       padding: 5rem 3rem;
     }
 
-    .page-eyebrow {
-      font-family: var(--font-mono);
-      font-size: 0.78rem;
-      color: var(--accent);
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      margin-bottom: 1rem;
-      animation: fadeUp 0.5s ease forwards;
-    }
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem; animation: fadeUp 0.5s ease forwards; }
+    h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.03em; line-height: 1; margin-bottom: 1rem; animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
+    .page-desc { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); margin-bottom: 3rem; line-height: 1.7; animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
 
-    h1 {
-      font-size: clamp(2.5rem, 6vw, 4rem);
-      font-weight: 800;
-      letter-spacing: -0.03em;
-      line-height: 1;
-      margin-bottom: 1rem;
-      animation: fadeUp 0.5s ease forwards 0.1s;
-      opacity: 0;
-    }
+    .stats-bar { display: flex; gap: 2rem; margin-bottom: 2rem; animation: fadeUp 0.5s ease forwards 0.3s; opacity: 0; }
+    .stat { display: flex; flex-direction: column; gap: 0.25rem; }
+    .stat-val { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .stat-lbl { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
 
-    .page-desc {
-      font-family: var(--font-mono);
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      margin-bottom: 3rem;
-      line-height: 1.7;
-      animation: fadeUp 0.5s ease forwards 0.2s;
-      opacity: 0;
-    }
-
-    /* STATS BAR */
-    .stats-bar {
-      display: flex;
-      gap: 2rem;
-      margin-bottom: 2rem;
-      animation: fadeUp 0.5s ease forwards 0.3s;
-      opacity: 0;
-    }
-
-    .stat {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-
-    .stat-val {
-      font-size: 1.75rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--accent);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .stat-lbl {
-      font-family: var(--font-mono);
-      font-size: 0.68rem;
-      color: var(--text-muted);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-    }
-
-    /* TYPING AREA */
     .typing-container {
       background: var(--bg2);
       border: 1px solid var(--border);
@@ -185,22 +119,9 @@
       animation: blink 1s step-end infinite;
     }
 
-    .hidden-input {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
-      width: 1px;
-      height: 1px;
-    }
+    .hidden-input { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
 
-    /* CONTROLS */
-    .controls {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      animation: fadeUp 0.5s ease forwards 0.5s;
-      opacity: 0;
-    }
+    .controls { display: flex; gap: 1rem; align-items: center; animation: fadeUp 0.5s ease forwards 0.5s; opacity: 0; flex-wrap: wrap; }
 
     .btn {
       display: inline-flex;
@@ -215,29 +136,17 @@
       cursor: pointer;
       transition: all 0.2s;
       text-decoration: none;
+      border: none;
     }
 
-    .btn-primary {
-      background: var(--accent);
-      color: #0a0a0b;
-      border: 1px solid var(--accent);
-    }
-
+    .btn-primary { background: var(--accent); color: #0a0a0b; border: 1px solid var(--accent); }
     .btn-primary:hover { background: transparent; color: var(--accent); }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--text-muted);
-      border: 1px solid var(--border-hover);
-    }
-
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-hover); }
     .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-finish { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+    .btn-finish:hover { background: var(--accent); color: #0a0a0b; }
 
-    .hint {
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      color: var(--text-muted);
-    }
+    .hint { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); }
 
     /* RESULTS */
     .results {
@@ -248,17 +157,11 @@
       padding: 3rem;
       text-align: center;
       margin-bottom: 1.5rem;
-      animation: fadeUp 0.4s ease forwards;
     }
 
-    .results.visible { display: block; }
+    .results.visible { display: block; animation: fadeUp 0.4s ease forwards; }
 
-    .result-title {
-      font-size: 1.5rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 2rem;
-    }
+    .result-title { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 2rem; }
 
     .result-grid {
       display: grid;
@@ -271,26 +174,71 @@
       margin-bottom: 2rem;
     }
 
-    .result-box {
-      background: var(--bg3);
-      padding: 1.5rem;
+    .result-box { background: var(--bg3); padding: 1.5rem; }
+    .result-val { font-size: 2.5rem; font-weight: 800; letter-spacing: -0.02em; color: var(--accent); margin-bottom: 0.4rem; }
+    .result-lbl { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+
+    /* LEADERBOARD */
+    .leaderboard {
+      margin-top: 4rem;
+      animation: fadeUp 0.5s ease forwards 0.6s;
+      opacity: 0;
     }
 
-    .result-val {
-      font-size: 2.5rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--accent);
-      margin-bottom: 0.4rem;
-    }
-
-    .result-lbl {
+    .section-label {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
       font-family: var(--font-mono);
       font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-label::after { content: ''; flex: 1; max-width: 80px; height: 1px; background: var(--border-hover); }
+
+    .lb-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .lb-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
       color: var(--text-muted);
+      font-size: 0.68rem;
       letter-spacing: 0.08em;
       text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg3);
     }
+
+    .lb-table td {
+      padding: 0.9rem 1rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-mid);
+      vertical-align: middle;
+    }
+
+    .lb-table tr:last-child td { border-bottom: none; }
+    .lb-table tr:hover td { background: var(--bg3); }
+
+    .lb-rank { color: var(--text-muted); font-size: 0.78rem; width: 2rem; }
+    .lb-rank.gold   { color: #ffd700; }
+    .lb-rank.silver { color: #c0c0c0; }
+    .lb-rank.bronze { color: #cd7f32; }
+
+    .lb-wpm { color: var(--accent); font-weight: 600; }
+    .lb-prompt { color: var(--text-mid); max-width: 350px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .lb-time { color: var(--text-muted); }
 
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(16px); }
@@ -320,7 +268,7 @@
   <main>
     <p class="page-eyebrow">Mini game</p>
     <h1>Typing Test</h1>
-    <p class="page-desc">Click the text below and start typing. Tech & coding themed prompts.</p>
+    <p class="page-desc">Click the text below and start typing. Click Finish or complete the prompt to see your stats.</p>
 
     <div class="stats-bar">
       <div class="stat">
@@ -344,7 +292,7 @@
 
     <!-- Results -->
     <div class="results" id="results">
-      <div class="result-title">Test complete! 🎉</div>
+      <div class="result-title" id="result-title">Test complete! 🎉</div>
       <div class="result-grid">
         <div class="result-box">
           <div class="result-val" id="res-wpm">0</div>
@@ -364,11 +312,35 @@
 
     <div class="controls">
       <button class="btn btn-ghost" onclick="newTest()">↻ New prompt</button>
-      <span class="hint">Click the text box to start · Tab + Enter to restart</span>
+      <button class="btn btn-finish" id="finish-btn" onclick="finishTest(true)">Finish</button>
+      <span class="hint">Click the text to start · Finish anytime</span>
+    </div>
+
+    <!-- Leaderboard -->
+    <div class="leaderboard">
+      <div class="section-label">🏆 Leaderboard</div>
+      <table class="lb-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>WPM</th>
+            <th>Accuracy</th>
+            <th>Time</th>
+            <th>Prompt</th>
+          </tr>
+        </thead>
+        <tbody id="lb-body">
+          <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem">Loading...</td></tr>
+        </tbody>
+      </table>
     </div>
   </main>
 
   <script>
+    var SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
+    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     var PROMPTS = [
       "This site was built from scratch using only HTML, CSS, and JavaScript.",
       "RAGE Alerting Systems is a Roblox project dedicated to realistic EAS simulation.",
@@ -380,7 +352,7 @@
       "The changelog page keeps a public log of every update made to this site.",
       "The weather widget on this site lets you look up current conditions by zip code.",
       "This site uses Supabase to handle user accounts, login, and database storage.",
-      "The 404 page on this site has a glitchy animated effect when you visit a page that does not exist.",
+      "The 404 page on this site has a glitchy animated effect when you visit a missing page.",
       "GitHub Pages hosts this site and every push to the repo automatically deploys it.",
       "The NOAA weather radio app uses DECtalk WASM to speak alerts out loud in the browser.",
       "Account requests show up in the admin panel with the reason the user provided.",
@@ -422,7 +394,7 @@
         } else if (i === typedChars.length) {
           state = 'cursor pending';
         }
-        return '<span class="char ' + state + '">' + (ch === ' ' ? '&nbsp;' : ch.replace('<', '&lt;').replace('>', '&gt;')) + '</span>';
+        return '<span class="char ' + state + '">' + (ch === ' ' ? '&nbsp;' : ch.replace(/</g, '&lt;').replace(/>/g, '&gt;')) + '</span>';
       }).join('');
     }
 
@@ -430,50 +402,35 @@
       document.getElementById('hidden-input').focus();
     }
 
-    document.getElementById('hidden-input').addEventListener('input', function(e) {
+    document.getElementById('hidden-input').addEventListener('input', function() {
       if (isFinished) return;
 
       var val = this.value;
+
+      // Prevent typing beyond prompt length
+      if (val.length > currentPrompt.length) {
+        this.value = val.slice(0, currentPrompt.length);
+        val = this.value;
+      }
+
       typedChars = val.split('');
 
-      // Start timer on first keypress
       if (!startTime && val.length > 0) {
         startTime = Date.now();
         timerInterval = setInterval(updateLiveStats, 100);
       }
 
-      document.getElementById('typing-container').className = 'typing-container active';
-
-      // Check for errors
       var hasError = typedChars.some((ch, i) => ch !== currentPrompt[i]);
-      if (hasError) document.getElementById('typing-container').className = 'typing-container error';
+      document.getElementById('typing-container').className = 'typing-container ' + (hasError ? 'error' : 'active');
 
       renderPrompt();
       updateLiveStats();
 
-      // Check completion
-      if (val === currentPrompt) {
-        finishTest();
-      }
-
-      // Prevent typing beyond prompt length
-      if (val.length > currentPrompt.length) {
-        this.value = val.slice(0, currentPrompt.length);
-        typedChars = this.value.split('');
-        renderPrompt();
-      }
+      if (val === currentPrompt) finishTest(false);
     });
 
     document.getElementById('hidden-input').addEventListener('keydown', function(e) {
-      if (e.key === 'Tab') {
-        e.preventDefault();
-      }
-    });
-
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && e.target.id !== 'hidden-input') {
-        newTest();
-      }
+      if (e.key === 'Tab') e.preventDefault();
     });
 
     function updateLiveStats() {
@@ -489,26 +446,61 @@
       document.getElementById('live-time').textContent = elapsed.toFixed(1) + 's';
     }
 
-    function finishTest() {
+    async function finishTest(manual) {
+      if (isFinished) return;
+      if (!startTime) return; // haven't started yet
+
       isFinished = true;
       clearInterval(timerInterval);
 
       var elapsed = (Date.now() - startTime) / 1000;
-      var words = currentPrompt.length / 5;
-      var wpm = Math.round((words / elapsed) * 60);
+      var words = typedChars.length / 5;
+      var wpm = elapsed > 0 ? Math.round((words / elapsed) * 60) : 0;
       var correct = typedChars.filter((ch, i) => ch === currentPrompt[i]).length;
-      var acc = Math.round((correct / typedChars.length) * 100);
+      var acc = typedChars.length > 0 ? Math.round((correct / typedChars.length) * 100) : 0;
 
       document.getElementById('res-wpm').textContent = wpm;
       document.getElementById('res-acc').textContent = acc + '%';
       document.getElementById('res-time').textContent = elapsed.toFixed(1) + 's';
+      document.getElementById('result-title').textContent = manual ? 'Nice run! 💪' : 'Test complete! 🎉';
 
       document.getElementById('typing-container').style.display = 'none';
       document.getElementById('results').classList.add('visible');
+
+      // Save to leaderboard
+      await sb.from('leaderboard').insert({
+        prompt: currentPrompt,
+        wpm: wpm,
+        time_seconds: parseFloat(elapsed.toFixed(1)),
+        accuracy: acc
+      });
+
+      loadLeaderboard();
     }
 
-    // Init
+    async function loadLeaderboard() {
+      var tbody = document.getElementById('lb-body');
+      var { data, error } = await sb.from('leaderboard').select('*').order('wpm', { ascending: false }).limit(20);
+
+      if (error || !data || data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem">No scores yet. Be the first!</td></tr>';
+        return;
+      }
+
+      var ranks = ['gold', 'silver', 'bronze'];
+      tbody.innerHTML = data.map((row, i) => `
+        <tr>
+          <td class="lb-rank ${ranks[i] || ''}">${i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1}</td>
+          <td class="lb-wpm">${row.wpm}</td>
+          <td style="color:var(--text-mid)">${row.accuracy}%</td>
+          <td class="lb-time">${row.time_seconds}s</td>
+          <td class="lb-prompt" title="${row.prompt}">${row.prompt}</td>
+        </tr>
+      `).join('');
+    }
+
     newTest();
+    loadLeaderboard();
   </script>
 
 </body>
