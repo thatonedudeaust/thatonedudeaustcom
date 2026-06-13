@@ -653,9 +653,9 @@ function setAllButtonsPlaying(playing) {
 // SAME uses AFSK: mark=2083.3Hz, space=1562.5Hz, 1562.5 baud
 function generateSAMEBurst(header) {
   var ctx = getAudioCtx();
-  var BAUD = 1562.5;
-  var MARK = 2083.3;  // '1' bit
-  var SPACE = 1562.5; // '0' bit
+  var BAUD = 520.83;  // Slowed for audible realism (real spec is 1562.5)
+  var MARK = 1562.5;  // Halved proportionally
+  var SPACE = 1041.7;
   var SAMPLE_RATE = ctx.sampleRate;
   var BIT_SAMPLES = Math.round(SAMPLE_RATE / BAUD);
 
