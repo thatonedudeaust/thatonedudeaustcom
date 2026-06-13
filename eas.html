@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EAS Encoder — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg2: #111113;
+      --bg3: #18181c;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8;
+      --text-muted: #6b6b72;
+      --text-mid: #9a9aa3;
+      --accent: #c8f04a;
+      --red: #ff5c5c;
+      --orange: #ff9f4a;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 3rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,11,0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+    .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+
+    main { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 3rem; }
+
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; }
+    h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.75rem; }
+    .page-desc { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+    .panel {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .panel.full { grid-column: 1 / -1; }
+
+    .panel-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--accent);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .panel-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    select, input, textarea {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.6rem 0.85rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+
+    select:focus, input:focus, textarea:focus { border-color: var(--accent); }
+    select option { background: var(--bg3); }
+    textarea { resize: vertical; min-height: 80px; }
+
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    /* FIPS area tags */
+    .fips-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; min-height: 2rem; }
+    .fips-tag {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: var(--accent-dim, rgba(200,240,74,0.1));
+      border: 1px solid rgba(200,240,74,0.2);
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 3px;
+    }
+    .fips-tag button { background: none; border: none; cursor: pointer; color: var(--accent); font-size: 0.85rem; line-height: 1; padding: 0; }
+
+    .fips-add { display: flex; gap: 0.5rem; }
+    .fips-add input { flex: 1; }
+    .fips-add button {
+      background: var(--accent); color: #0a0a0b; border: none;
+      border-radius: 4px; padding: 0.6rem 1rem;
+      font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; white-space: nowrap; transition: all 0.2s;
+    }
+    .fips-add button:hover { background: transparent; color: var(--accent); border: 1px solid var(--accent); }
+
+    /* SAME header output */
+    .same-output {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--accent);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1rem;
+      word-break: break-all;
+      min-height: 3rem;
+      line-height: 1.6;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-family: var(--font-mono); font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.06em; border-radius: 4px; cursor: pointer;
+      transition: all 0.2s; border: none; text-decoration: none;
+    }
+    .btn-primary { background: var(--accent); color: #0a0a0b; border: 1px solid var(--accent); }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-hover); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-danger { background: transparent; color: var(--red); border: 1px solid rgba(255,92,92,0.3); }
+    .btn-danger:hover { background: rgba(255,92,92,0.1); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+
+    /* Playback controls */
+    .playback-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.75rem;
+    }
+
+    .play-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+      padding: 1rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .play-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .play-btn.playing { border-color: var(--accent); background: rgba(200,240,74,0.06); color: var(--accent); }
+    .play-btn .icon { font-size: 1.25rem; }
+
+    /* Activity log */
+    .log {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      max-height: 120px;
+      overflow-y: auto;
+      line-height: 1.8;
+    }
+
+    .log-entry { display: flex; gap: 0.75rem; }
+    .log-time { color: var(--accent); flex-shrink: 0; }
+
+    /* Status indicator */
+    .status {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);
+    }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
+    .status-dot.ready { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+    .status-dot.playing { background: var(--orange); box-shadow: 0 0 6px var(--orange); animation: pulse 0.8s ease-in-out infinite; }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      main { padding: 1.5rem; }
+      .grid { grid-template-columns: 1fr; }
+      .panel.full { grid-column: 1; }
+      .playback-grid { grid-template-columns: repeat(2, 1fr); }
+      .row, .row3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">thatonedudeaust.com</a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+
+<main>
+  <p class="page-eyebrow">Emergency Alert System</p>
+  <h1>EAS Encoder</h1>
+  <p class="page-desc">Generate real SAME-compliant EAS headers with FSK audio encoding per 47 CFR §11.31.</p>
+
+  <div class="grid">
+
+    <!-- EVENT & ORIGINATOR -->
+    <div class="panel">
+      <div class="panel-header">Event & Originator</div>
+      <div class="panel-body">
+        <div class="field">
+          <label>EAS Event Code</label>
+          <select id="event-code"></select>
+        </div>
+        <div class="field">
+          <label>Originator</label>
+          <select id="originator">
+            <option value="PEP">PEP — Primary Entry Point System</option>
+            <option value="CIV">CIV — Civil Authorities</option>
+            <option value="WXR" selected>WXR — National Weather Service</option>
+            <option value="EAS">EAS — EAS Participant</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Callsign / Sender ID (max 8 chars)</label>
+          <input type="text" id="callsign" value="WSID/AM" maxlength="8" />
+        </div>
+      </div>
+    </div>
+
+    <!-- TIME & TONE -->
+    <div class="panel">
+      <div class="panel-header">Time & Tone</div>
+      <div class="panel-body">
+        <div class="row">
+          <div class="field">
+            <label>Issue Time (local)</label>
+            <input type="datetime-local" id="issue-time" />
+          </div>
+          <div class="field">
+            <label>Valid Duration</label>
+            <select id="valid-hours">
+              <option value="0">0 hr</option>
+              <option value="1" selected>1 hr</option>
+              <option value="2">2 hr</option>
+              <option value="3">3 hr</option>
+              <option value="4">4 hr</option>
+              <option value="6">6 hr</option>
+              <option value="8">8 hr</option>
+              <option value="12">12 hr</option>
+              <option value="24">24 hr</option>
+              <option value="48">48 hr</option>
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>Valid Minutes</label>
+            <select id="valid-mins">
+              <option value="00" selected>00 min</option>
+              <option value="15">15 min</option>
+              <option value="30">30 min</option>
+              <option value="45">45 min</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Attention Tone Duration (8–25s)</label>
+            <input type="number" id="tone-duration" value="8" min="8" max="25" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AFFECTED AREAS -->
+    <div class="panel full">
+      <div class="panel-header">Affected Areas — FIPS Codes</div>
+      <div class="panel-body">
+        <p style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted)">Add FIPS codes manually (6-digit) or use the selectors below. Max 31 locations. Defaults to 000000 (nationwide) if empty.</p>
+        <div class="row3">
+          <div class="field">
+            <label>Subdivision</label>
+            <select id="fips-sub">
+              <option value="0">0 — Entire area</option>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>State</label>
+            <select id="fips-state"></select>
+          </div>
+          <div class="field">
+            <label>County / Area</label>
+            <select id="fips-county"></select>
+          </div>
+        </div>
+        <div class="fips-add">
+          <input type="text" id="fips-manual" placeholder="Or enter 6-digit FIPS manually" maxlength="6" />
+          <button onclick="addFips()">+ Add Location</button>
+        </div>
+        <div class="fips-tags" id="fips-tags"></div>
+      </div>
+    </div>
+
+    <!-- VOICE MESSAGE -->
+    <div class="panel full">
+      <div class="panel-header">Alert Voice Message (TTS)</div>
+      <div class="panel-body">
+        <div class="field">
+          <label>Message text — spoken after attention tone</label>
+          <textarea id="tts-text" rows="3">The National Weather Service has issued a Tornado Warning for the following counties. Take shelter immediately.</textarea>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>TTS Voice</label>
+            <select id="tts-voice"></select>
+          </div>
+          <div class="field">
+            <label>Rate</label>
+            <select id="tts-rate">
+              <option value="0.7">Slow</option>
+              <option value="0.9" selected>Normal</option>
+              <option value="1.1">Fast</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-ghost" style="align-self:flex-start" onclick="previewTTS()">▶ Preview TTS</button>
+      </div>
+    </div>
+
+    <!-- GENERATED SAME HEADER -->
+    <div class="panel full">
+      <div class="panel-header">Generated SAME Header</div>
+      <div class="panel-body">
+        <div class="same-output" id="same-output">Fill in the fields above then hit Generate</div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="generateHeader()">Generate</button>
+          <button class="btn btn-ghost" onclick="copyHeader()">Copy Header</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLAYBACK -->
+    <div class="panel full">
+      <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Playback</span>
+        <div class="status"><div class="status-dot" id="status-dot"></div><span id="status-text">Generate a header first</span></div>
+      </div>
+      <div class="panel-body">
+        <div class="playback-grid">
+          <button class="play-btn" id="btn-header1" onclick="playPart('header')" disabled>
+            <span class="icon">📡</span>HEADER ×3
+          </button>
+          <button class="play-btn" id="btn-attn" onclick="playPart('attn')" disabled>
+            <span class="icon">🔊</span>ATTN TONE
+          </button>
+          <button class="play-btn" id="btn-voice" onclick="playPart('voice')" disabled>
+            <span class="icon">🗣️</span>VOICE MSG
+          </button>
+          <button class="play-btn" id="btn-eom" onclick="playPart('eom')" disabled>
+            <span class="icon">📻</span>EOM ×3
+          </button>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="btn-full" onclick="playFull()" disabled>▶ Full Sequence</button>
+          <button class="btn btn-danger" onclick="stopAll()">■ Stop</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIVITY LOG -->
+    <div class="panel full">
+      <div class="panel-header" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Activity Log</span>
+        <button class="btn btn-ghost" style="padding:0.3rem 0.8rem;font-size:0.68rem" onclick="clearLog()">Clear</button>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ─── EAS EVENT CODES ───────────────────────────────────────────────────────
+var EAS_EVENTS = [
+  ["BLU","Blue Alert"],["CAE","Child Abduction Emergency"],["CDW","Civil Danger Warning"],
+  ["CEM","Civil Emergency Message"],["CFA","Coastal Flood Watch"],["CFW","Coastal Flood Warning"],
+  ["DBW","Dam Break Warning"],["DEW","Destruct Event Warning"],["DUS","Dust Storm Warning"],
+  ["EAN","Emergency Action Notification"],["EAT","Emergency Action Termination"],
+  ["EQW","Earthquake Warning"],["EVA","Evacuation Watch"],["EVI","Evacuation Immediate"],
+  ["EWW","Extreme Wind Warning"],["FAW","Flood Watch (Areal)"],["FFS","Flash Flood Statement"],
+  ["FFW","Flash Flood Warning"],["FLA","Flood Watch (Areal)"],["FLS","Flood Statement"],
+  ["FLW","Flood Warning"],["FRW","Fire Warning"],["FSW","Flash Freeze Warning"],
+  ["FZW","Freeze Warning"],["HLS","Hurricane Local Statement"],["HMW","Hazardous Materials Warning"],
+  ["HUA","Hurricane Watch"],["HUW","Hurricane Warning"],["HWA","High Wind Watch"],
+  ["HWW","High Wind Warning"],["IBW","Iceberg Warning"],["IFW","Industrial Fire Warning"],
+  ["LAE","Local Area Emergency"],["LEW","Law Enforcement Warning"],["LSW","Land Slide Warning"],
+  ["MAN","Manual Message"],["NAT","National Audible Test"],["NIC","National Information Center"],
+  ["NMN","Network Message Notification"],["NPT","National Periodic Test"],
+  ["NST","National Silent Test"],["NUW","Nuclear Plant Warning"],
+  ["POS","Practice/Demo Warning — Orange"],["RHW","Radiological Hazard Warning"],
+  ["RMT","Required Monthly Test"],["RWT","Required Weekly Test"],
+  ["SMW","Special Marine Warning"],["SPS","Special Weather Statement"],
+  ["SPW","Shelter in Place Warning"],["SQW","Snow Squall Warning"],["SSA","Storm Surge Watch"],
+  ["SSW","Storm Surge Warning"],["SVA","Severe Thunderstorm Watch"],
+  ["SVR","Severe Thunderstorm Warning"],["SVS","Severe Weather Statement"],
+  ["TOA","Tornado Watch"],["TOR","Tornado Warning"],["TRA","Tropical Storm Watch"],
+  ["TRW","Tropical Storm Warning"],["TSA","Tsunami Watch"],["TSW","Tsunami Warning"],
+  ["TXB","Transmitter Backup On"],["TXF","Transmitter Carrier Off"],
+  ["TXO","Transmitter Carrier On"],["TXP","Transmitter Primary On"],
+  ["VOW","Volcano Warning"],["WFA","Wild Fire Watch"],["WFW","Wild Fire Warning"],
+  ["WSA","Winter Storm Watch"],["WSW","Winter Storm Warning"],["WWA","Winter Weather Advisory"],
+  ["ZFW","Freezing Fog Advisory"]
+];
+
+// ─── FIPS STATE DATA ────────────────────────────────────────────────────────
+var FIPS_STATES = [
+  ["00","United States (All)"],["01","Alabama"],["02","Alaska"],["04","Arizona"],["05","Arkansas"],
+  ["06","California"],["08","Colorado"],["09","Connecticut"],["10","Delaware"],["11","District of Columbia"],
+  ["12","Florida"],["13","Georgia"],["15","Hawaii"],["16","Idaho"],["17","Illinois"],["18","Indiana"],
+  ["19","Iowa"],["20","Kansas"],["21","Kentucky"],["22","Louisiana"],["23","Maine"],["24","Maryland"],
+  ["25","Massachusetts"],["26","Michigan"],["27","Minnesota"],["28","Mississippi"],["29","Missouri"],
+  ["30","Montana"],["31","Nebraska"],["32","Nevada"],["33","New Hampshire"],["34","New Jersey"],
+  ["35","New Mexico"],["36","New York"],["37","North Carolina"],["38","North Dakota"],["39","Ohio"],
+  ["40","Oklahoma"],["41","Oregon"],["42","Pennsylvania"],["44","Rhode Island"],["45","South Carolina"],
+  ["46","South Dakota"],["47","Tennessee"],["48","Texas"],["49","Utah"],["50","Vermont"],
+  ["51","Virginia"],["53","Washington"],["54","West Virginia"],["55","Wisconsin"],["56","Wyoming"],
+  ["72","Puerto Rico"],["78","Virgin Islands"]
+];
+
+var FIPS_COUNTIES = {
+  "00": [["000","Entire State / All Counties"]],
+  "34": [["000","All Counties"],["001","Atlantic"],["003","Bergen"],["005","Burlington"],
+         ["007","Camden"],["009","Cape May"],["011","Cumberland"],["013","Essex"],
+         ["015","Gloucester"],["017","Hudson"],["019","Hunterdon"],["021","Mercer"],
+         ["023","Middlesex"],["025","Monmouth"],["027","Morris"],["029","Ocean"],
+         ["031","Passaic"],["033","Salem"],["035","Somerset"],["037","Sussex"],
+         ["039","Union"],["041","Warren"]]
+};
+
+var fipsList = [];
+var audioCtx = null;
+var currentSource = null;
+var generatedHeader = null;
+var isPlaying = false;
+
+// ─── INIT ───────────────────────────────────────────────────────────────────
+window.addEventListener('load', function() {
+  // Populate event codes
+  var ec = document.getElementById('event-code');
+  EAS_EVENTS.forEach(function(e) {
+    var opt = document.createElement('option');
+    opt.value = e[0];
+    opt.textContent = e[0] + ' — ' + e[1];
+    if (e[0] === 'TOR') opt.selected = true;
+    ec.appendChild(opt);
+  });
+
+  // Populate states
+  var st = document.getElementById('fips-state');
+  FIPS_STATES.forEach(function(s) {
+    var opt = document.createElement('option');
+    opt.value = s[0];
+    opt.textContent = s[1];
+    st.appendChild(opt);
+  });
+  st.addEventListener('change', populateCounties);
+  populateCounties();
+
+  // Set default issue time to now
+  var now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  document.getElementById('issue-time').value = now.toISOString().slice(0,16);
+
+  // Populate TTS voices
+  function loadVoices() {
+    var voices = speechSynthesis.getVoices();
+    var sel = document.getElementById('tts-voice');
+    sel.innerHTML = '';
+    voices.forEach(function(v, i) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = v.name + ' (' + v.lang + ')';
+      sel.appendChild(opt);
+    });
+  }
+  speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+
+  log('EAS Encoder ready.');
+});
+
+function populateCounties() {
+  var state = document.getElementById('fips-state').value;
+  var sel = document.getElementById('fips-county');
+  sel.innerHTML = '';
+  var counties = FIPS_COUNTIES[state] || [["000","Entire State / All Counties"]];
+  counties.forEach(function(c) {
+    var opt = document.createElement('option');
+    opt.value = c[0];
+    opt.textContent = c[1];
+    sel.appendChild(opt);
+  });
+}
+
+// ─── FIPS MANAGEMENT ────────────────────────────────────────────────────────
+function addFips() {
+  var manual = document.getElementById('fips-manual').value.trim();
+  var code;
+
+  if (manual.length === 6 && /^\d+$/.test(manual)) {
+    code = manual;
+  } else {
+    var sub = document.getElementById('fips-sub').value;
+    var state = document.getElementById('fips-state').value;
+    var county = document.getElementById('fips-county').value;
+    code = sub + state + county;
+  }
+
+  if (fipsList.length >= 31) { log('Maximum 31 locations reached.'); return; }
+  if (fipsList.includes(code)) { log('Location ' + code + ' already added.'); return; }
+
+  fipsList.push(code);
+  document.getElementById('fips-manual').value = '';
+  renderFipsTags();
+  log('Added FIPS: ' + code);
+}
+
+function removeFips(code) {
+  fipsList = fipsList.filter(function(f) { return f !== code; });
+  renderFipsTags();
+}
+
+function renderFipsTags() {
+  var container = document.getElementById('fips-tags');
+  container.innerHTML = fipsList.map(function(f) {
+    return '<div class="fips-tag">' + f + '<button onclick="removeFips(\'' + f + '\')" title="Remove">×</button></div>';
+  }).join('');
+}
+
+// ─── SAME HEADER GENERATION ─────────────────────────────────────────────────
+function generateHeader() {
+  var event = document.getElementById('event-code').value;
+  var originator = document.getElementById('originator').value;
+  var callsign = document.getElementById('callsign').value.trim().padEnd(8, '-').slice(0, 8);
+  var issueTime = new Date(document.getElementById('issue-time').value);
+  var hours = parseInt(document.getElementById('valid-hours').value);
+  var mins = document.getElementById('valid-mins').value;
+  var purge = String(hours).padStart(2,'0') + mins;
+
+  // Format issue time as JJJHHMM (Julian day + UTC time)
+  var utcTime = new Date(issueTime.getTime());
+  var start = new Date(utcTime.getFullYear(), 0, 0);
+  var diff = utcTime - start;
+  var oneDay = 1000 * 60 * 60 * 24;
+  var jjj = String(Math.floor(diff / oneDay)).padStart(3, '0');
+  var hhmm = String(utcTime.getUTCHours()).padStart(2,'0') + String(utcTime.getUTCMinutes()).padStart(2,'0');
+  var timeCode = jjj + hhmm;
+
+  // Build FIPS string
+  var locations = fipsList.length > 0 ? fipsList : ['000000'];
+  var fipsStr = locations.map(function(f) { return '+' + f; }).join('');
+
+  // SAME header: ZCZC-ORG-EVT-NNNSSS+TTTT-JJJHHMM-LLLLLLLL-
+  var header = 'ZCZC-' + originator + '-' + event + '-' + fipsStr + '-' + timeCode + '-' + callsign.replace(/ /g,'-') + '-';
+
+  document.getElementById('same-output').textContent = header;
+
+  // Enable playback buttons
+  ['btn-header1','btn-attn','btn-voice','btn-eom','btn-full'].forEach(function(id) {
+    document.getElementById(id).disabled = false;
+  });
+
+  document.getElementById('status-dot').className = 'status-dot ready';
+  document.getElementById('status-text').textContent = 'Ready to play';
+
+  generatedHeader = header;
+  log('Generated: ' + header);
+  return header;
+}
+
+function copyHeader() {
+  var text = document.getElementById('same-output').textContent;
+  navigator.clipboard.writeText(text).then(function() { log('Header copied to clipboard.'); });
+}
+
+// ─── AUDIO ENGINE ────────────────────────────────────────────────────────────
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function stopAll() {
+  if (currentSource) { try { currentSource.stop(); } catch(e) {} currentSource = null; }
+  speechSynthesis.cancel();
+  isPlaying = false;
+  setAllButtonsPlaying(false);
+  document.getElementById('status-dot').className = 'status-dot ready';
+  document.getElementById('status-text').textContent = 'Stopped';
+  log('Playback stopped.');
+}
+
+function setAllButtonsPlaying(playing) {
+  ['btn-header1','btn-attn','btn-voice','btn-eom'].forEach(function(id) {
+    document.getElementById(id).classList.toggle('playing', playing);
+  });
+}
+
+// Generate FSK SAME burst
+// SAME uses AFSK: mark=2083.3Hz, space=1562.5Hz, 1562.5 baud
+function generateSAMEBurst(header) {
+  var ctx = getAudioCtx();
+  var BAUD = 1562.5;
+  var MARK = 2083.3;  // '1' bit
+  var SPACE = 1562.5; // '0' bit
+  var SAMPLE_RATE = ctx.sampleRate;
+  var BIT_SAMPLES = Math.round(SAMPLE_RATE / BAUD);
+
+  // Preamble: 0xAB repeated 16 times
+  var preamble = [];
+  for (var i = 0; i < 16; i++) {
+    preamble.push(0xAB);
+  }
+
+  // Convert header string to bytes
+  var headerBytes = [];
+  for (var j = 0; j < header.length; j++) {
+    headerBytes.push(header.charCodeAt(j));
+  }
+
+  var allBytes = preamble.concat(headerBytes);
+  var totalBits = allBytes.length * 8;
+  var totalSamples = totalBits * BIT_SAMPLES + Math.round(SAMPLE_RATE * 0.05); // 50ms tail
+
+  var buffer = ctx.createBuffer(1, totalSamples, SAMPLE_RATE);
+  var data = buffer.getChannelData(0);
+
+  var sampleIndex = 0;
+  for (var b = 0; b < allBytes.length; b++) {
+    var byte = allBytes[b];
+    // LSB first
+    for (var bit = 0; bit < 8; bit++) {
+      var bitVal = (byte >> bit) & 1;
+      var freq = bitVal === 1 ? MARK : SPACE;
+      for (var s = 0; s < BIT_SAMPLES; s++) {
+        var t = sampleIndex / SAMPLE_RATE;
+        data[sampleIndex] = 0.8 * Math.sin(2 * Math.PI * freq * t);
+        sampleIndex++;
+      }
+    }
+  }
+
+  return buffer;
+}
+
+// Generate attention tone: 853 Hz + 960 Hz simultaneously
+function generateAttentionTone(durationSecs) {
+  var ctx = getAudioCtx();
+  var SAMPLE_RATE = ctx.sampleRate;
+  var totalSamples = Math.round(SAMPLE_RATE * durationSecs);
+  var buffer = ctx.createBuffer(1, totalSamples, SAMPLE_RATE);
+  var data = buffer.getChannelData(0);
+
+  for (var i = 0; i < totalSamples; i++) {
+    var t = i / SAMPLE_RATE;
+    // Mix both tones at half amplitude each
+    data[i] = 0.45 * Math.sin(2 * Math.PI * 853 * t) + 0.45 * Math.sin(2 * Math.PI * 960 * t);
+  }
+
+  return buffer;
+}
+
+// Generate EOM burst
+function generateEOM() {
+  return generateSAMEBurst('NNNN');
+}
+
+function playBuffer(buffer) {
+  return new Promise(function(resolve) {
+    var ctx = getAudioCtx();
+    var source = ctx.createBufferSource();
+    source.buffer = buffer;
+    source.connect(ctx.destination);
+    currentSource = source;
+    source.onended = resolve;
+    source.start();
+  });
+}
+
+function sleep(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
+}
+
+function playTTS(text, voiceIdx, rate) {
+  return new Promise(function(resolve) {
+    speechSynthesis.cancel();
+    var utter = new SpeechSynthesisUtterance(text);
+    var voices = speechSynthesis.getVoices();
+    if (voices[voiceIdx]) utter.voice = voices[voiceIdx];
+    utter.rate = parseFloat(rate);
+    utter.onend = resolve;
+    utter.onerror = resolve;
+    speechSynthesis.speak(utter);
+  });
+}
+
+// ─── PLAYBACK CONTROLS ───────────────────────────────────────────────────────
+async function playPart(part) {
+  if (!generatedHeader) { log('Generate a header first.'); return; }
+  if (isPlaying) stopAll();
+
+  isPlaying = true;
+  document.getElementById('status-dot').className = 'status-dot playing';
+
+  var toneDuration = parseInt(document.getElementById('tone-duration').value) || 8;
+  var ttsText = document.getElementById('tts-text').value;
+  var voiceIdx = parseInt(document.getElementById('tts-voice').value) || 0;
+  var ttsRate = document.getElementById('tts-rate').value;
+
+  try {
+    if (part === 'header') {
+      document.getElementById('btn-header1').classList.add('playing');
+      document.getElementById('status-text').textContent = 'Playing SAME header ×3...';
+      log('Playing SAME header burst ×3...');
+      for (var i = 0; i < 3; i++) {
+        var buf = generateSAMEBurst(generatedHeader);
+        await playBuffer(buf);
+        if (i < 2) await sleep(1000); // 1s gap between bursts per CFR
+      }
+      document.getElementById('btn-header1').classList.remove('playing');
+    }
+
+    else if (part === 'attn') {
+      document.getElementById('btn-attn').classList.add('playing');
+      document.getElementById('status-text').textContent = 'Playing attention tone...';
+      log('Playing attention tone (' + toneDuration + 's)...');
+      var attnBuf = generateAttentionTone(toneDuration);
+      await playBuffer(attnBuf);
+      document.getElementById('btn-attn').classList.remove('playing');
+    }
+
+    else if (part === 'voice') {
+      document.getElementById('btn-voice').classList.add('playing');
+      document.getElementById('status-text').textContent = 'Playing voice message...';
+      log('Playing voice message via TTS...');
+      await playTTS(ttsText, voiceIdx, ttsRate);
+      document.getElementById('btn-voice').classList.remove('playing');
+    }
+
+    else if (part === 'eom') {
+      document.getElementById('btn-eom').classList.add('playing');
+      document.getElementById('status-text').textContent = 'Playing EOM ×3...';
+      log('Playing EOM burst ×3...');
+      for (var j = 0; j < 3; j++) {
+        var eomBuf = generateEOM();
+        await playBuffer(eomBuf);
+        if (j < 2) await sleep(1000);
+      }
+      document.getElementById('btn-eom').classList.remove('playing');
+    }
+  } catch(e) {}
+
+  if (isPlaying) {
+    isPlaying = false;
+    document.getElementById('status-dot').className = 'status-dot ready';
+    document.getElementById('status-text').textContent = 'Ready';
+  }
+}
+
+async function playFull() {
+  if (!generatedHeader) { log('Generate a header first.'); return; }
+  if (isPlaying) stopAll();
+
+  isPlaying = true;
+  var toneDuration = parseInt(document.getElementById('tone-duration').value) || 8;
+  var ttsText = document.getElementById('tts-text').value;
+  var voiceIdx = parseInt(document.getElementById('tts-voice').value) || 0;
+  var ttsRate = document.getElementById('tts-rate').value;
+
+  log('Starting full EAS sequence...');
+  document.getElementById('status-dot').className = 'status-dot playing';
+
+  try {
+    // SAME header ×3
+    document.getElementById('btn-header1').classList.add('playing');
+    document.getElementById('status-text').textContent = 'Playing SAME header ×3...';
+    for (var i = 0; i < 3; i++) {
+      if (!isPlaying) return;
+      await playBuffer(generateSAMEBurst(generatedHeader));
+      if (i < 2) await sleep(1000);
+    }
+    document.getElementById('btn-header1').classList.remove('playing');
+    await sleep(500);
+
+    // Attention tone
+    if (!isPlaying) return;
+    document.getElementById('btn-attn').classList.add('playing');
+    document.getElementById('status-text').textContent = 'Attention tone...';
+    log('Attention tone...');
+    await playBuffer(generateAttentionTone(toneDuration));
+    document.getElementById('btn-attn').classList.remove('playing');
+    await sleep(500);
+
+    // Voice message
+    if (!isPlaying) return;
+    document.getElementById('btn-voice').classList.add('playing');
+    document.getElementById('status-text').textContent = 'Voice message...';
+    log('Voice message...');
+    await playTTS(ttsText, voiceIdx, ttsRate);
+    document.getElementById('btn-voice').classList.remove('playing');
+    await sleep(1000);
+
+    // EOM ×3
+    if (!isPlaying) return;
+    document.getElementById('btn-eom').classList.add('playing');
+    document.getElementById('status-text').textContent = 'EOM ×3...';
+    log('EOM burst ×3...');
+    for (var j = 0; j < 3; j++) {
+      if (!isPlaying) return;
+      await playBuffer(generateEOM());
+      if (j < 2) await sleep(1000);
+    }
+    document.getElementById('btn-eom').classList.remove('playing');
+
+    log('Full sequence complete.');
+    document.getElementById('status-text').textContent = 'Complete';
+    document.getElementById('status-dot').className = 'status-dot ready';
+  } catch(e) {
+    log('Playback error: ' + e.message);
+  }
+
+  isPlaying = false;
+}
+
+function previewTTS() {
+  var text = document.getElementById('tts-text').value;
+  var voiceIdx = parseInt(document.getElementById('tts-voice').value) || 0;
+  var rate = document.getElementById('tts-rate').value;
+  log('Previewing TTS...');
+  playTTS(text, voiceIdx, rate);
+}
+
+// ─── LOG ─────────────────────────────────────────────────────────────────────
+function log(msg) {
+  var logEl = document.getElementById('log');
+  var now = new Date();
+  var time = '[' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0') + ']';
+  var entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = '<span class="log-time">' + time + '</span><span>' + msg + '</span>';
+  logEl.appendChild(entry);
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('log').innerHTML = '';
+}
+</script>
+
+</body>
+</html>
