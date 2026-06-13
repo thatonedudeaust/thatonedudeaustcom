@@ -653,9 +653,9 @@ function setAllButtonsPlaying(playing) {
 // SAME uses AFSK: mark=2083.3Hz, space=1562.5Hz, 1562.5 baud
 function generateSAMEBurst(header) {
   var ctx = getAudioCtx();
-  var BAUD = 520.83;
-  var MARK = 693.3;   // MARK/BAUD ratio preserved from spec (2083.3/1562.5 * 520.83)
-  var SPACE = 520.83; // SPACE = BAUD in spec, so SPACE = BAUD here too
+  var BAUD = 520.83;  // 520.83 bps per 47 CFR 11.31
+  var MARK = 2083.3;  // Fixed mark frequency per spec
+  var SPACE = 1562.5; // Fixed space frequency per spec
   var SAMPLE_RATE = ctx.sampleRate;
   var BIT_SAMPLES = Math.round(SAMPLE_RATE / BAUD);
 
