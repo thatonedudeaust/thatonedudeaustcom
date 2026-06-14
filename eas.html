@@ -403,7 +403,6 @@
         </div>
         <div class="btn-row">
           <button class="btn btn-primary" id="btn-full" onclick="playFull()" disabled>▶ Full Sequence</button>
-          <button class="btn btn-ghost" id="btn-wav" onclick="renderWAV()" disabled>⬇ Render WAV</button>
           <button class="btn btn-danger" onclick="stopAll()">■ Stop</button>
         </div>
       </div>
@@ -610,7 +609,7 @@ function generateHeader() {
   document.getElementById('same-output').textContent = header;
 
   // Enable playback buttons
-  ['btn-header1','btn-attn','btn-voice','btn-eom','btn-full','btn-wav'].forEach(function(id) {
+  ['btn-header1','btn-attn','btn-voice','btn-eom','btn-full'].forEach(function(id) {
     document.getElementById(id).disabled = false;
   });
 
