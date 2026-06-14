@@ -403,6 +403,7 @@
         </div>
         <div class="btn-row">
           <button class="btn btn-primary" id="btn-full" onclick="playFull()" disabled>▶ Full Sequence</button>
+          <button class="btn btn-ghost" id="btn-wav" onclick="renderWAV()" disabled>⬇ Render WAV</button>
           <button class="btn btn-danger" onclick="stopAll()">■ Stop</button>
         </div>
       </div>
@@ -609,7 +610,7 @@ function generateHeader() {
   document.getElementById('same-output').textContent = header;
 
   // Enable playback buttons
-  ['btn-header1','btn-attn','btn-voice','btn-eom','btn-full'].forEach(function(id) {
+  ['btn-header1','btn-attn','btn-voice','btn-eom','btn-full','btn-wav'].forEach(function(id) {
     document.getElementById(id).disabled = false;
   });
 
@@ -885,6 +886,167 @@ function previewTTS() {
   var rate = document.getElementById('tts-rate').value;
   log('Previewing TTS...');
   playTTS(text, voiceIdx, rate);
+}
+
+// ─── WAV EXPORT ──────────────────────────────────────────────────────────────
+async function renderWAV() {
+  if (!generatedHeader) { log('Generate a header first.'); return; }
+
+  var btn = document.getElementById('btn-wav');
+  btn.textContent = '⏳ Rendering...';
+  btn.disabled = true;
+  log('Rendering WAV file...');
+
+  var toneDuration = parseInt(document.getElementById('tone-duration').value) || 8;
+  var ttsText = document.getElementById('tts-text').value;
+  var voiceIdx = parseInt(document.getElementById('tts-voice').value) || 0;
+  var ttsRate = parseFloat(document.getElementById('tts-rate').value);
+
+  var SAMPLE_RATE = 44100;
+  var offlineCtx = new OfflineAudioContext(1, 1, SAMPLE_RATE); // just to get sample rate
+
+  // Build all audio buffers
+  var silence500 = makeSilence(SAMPLE_RATE, 0.5);
+  var silence1000 = makeSilence(SAMPLE_RATE, 1.0);
+
+  // SAME header x3
+  var headerBuf1 = generateSAMEBurst(generatedHeader);
+  var headerBuf2 = generateSAMEBurst(generatedHeader);
+  var headerBuf3 = generateSAMEBurst(generatedHeader);
+
+  // Attention tone
+  var attnBuf = generateAttentionTone(toneDuration);
+
+  // EOM x3
+  var eomBuf1 = generateEOM();
+  var eomBuf2 = generateEOM();
+  var eomBuf3 = generateEOM();
+
+  // Get TTS audio via MediaRecorder
+  log('Capturing TTS audio...');
+  var ttsAudioBuffer = await captureTTS(ttsText, voiceIdx, ttsRate, SAMPLE_RATE);
+
+  // Concatenate all buffers in order:
+  // header x3 (1s gap) | 0.5s | attn tone | 0.5s | voice | 1s | eom x3 (1s gap)
+  var parts = [
+    headerBuf1, silence1000,
+    headerBuf2, silence1000,
+    headerBuf3, silence500,
+    attnBuf, silence500,
+    ttsAudioBuffer, silence1000,
+    eomBuf1, silence1000,
+    eomBuf2, silence1000,
+    eomBuf3
+  ];
+
+  var totalSamples = parts.reduce(function(acc, b) { return acc + b.length; }, 0);
+  var finalBuffer = new Float32Array(totalSamples);
+  var offset = 0;
+  parts.forEach(function(b) {
+    finalBuffer.set(b.getChannelData(0), offset);
+    offset += b.length;
+  });
+
+  // Encode as WAV
+  var wavBlob = encodeWAV(finalBuffer, SAMPLE_RATE);
+  var url = URL.createObjectURL(wavBlob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'EAS_' + generatedHeader.split('-')[2] + '_' + Date.now() + '.wav';
+  a.click();
+  URL.revokeObjectURL(url);
+
+  log('WAV exported successfully!');
+  btn.textContent = '⬇ Render WAV';
+  btn.disabled = false;
+}
+
+function makeSilence(sampleRate, durationSecs) {
+  var ctx = getAudioCtx();
+  var samples = Math.round(sampleRate * durationSecs);
+  var buf = ctx.createBuffer(1, samples, sampleRate);
+  return buf;
+}
+
+function captureTTS(text, voiceIdx, rate, sampleRate) {
+  return new Promise(function(resolve) {
+    // Use Web Audio destination + MediaRecorder to capture TTS
+    var stream = null;
+    try {
+      var ctx = getAudioCtx();
+      var dest = ctx.createMediaStreamDestination();
+      stream = dest.stream;
+    } catch(e) {
+      // Fallback: return silence if capture not supported
+      log('TTS capture not supported in this browser, using silence for voice segment.');
+      var ctx2 = getAudioCtx();
+      var silence = ctx2.createBuffer(1, sampleRate * 3, sampleRate);
+      resolve(silence);
+      return;
+    }
+
+    var chunks = [];
+    var recorder = new MediaRecorder(stream);
+    recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+    recorder.onstop = function() {
+      var blob = new Blob(chunks, { type: 'audio/webm' });
+      var fileReader = new FileReader();
+      fileReader.onloadend = function() {
+        var arrayBuffer = fileReader.result;
+        var tempCtx = new (window.AudioContext || window.webkitAudioContext)({ sampleRate: sampleRate });
+        tempCtx.decodeAudioData(arrayBuffer, function(decoded) {
+          resolve(decoded);
+        }, function() {
+          // Decode failed, return silence
+          var ctx3 = getAudioCtx();
+          resolve(ctx3.createBuffer(1, sampleRate * 3, sampleRate));
+        });
+      };
+      fileReader.readAsArrayBuffer(blob);
+    };
+
+    recorder.start();
+    var utter = new SpeechSynthesisUtterance(text);
+    var voices = speechSynthesis.getVoices();
+    if (voices[voiceIdx]) utter.voice = voices[voiceIdx];
+    utter.rate = rate;
+    utter.onend = function() { setTimeout(function() { recorder.stop(); }, 300); };
+    utter.onerror = function() { recorder.stop(); };
+    speechSynthesis.speak(utter);
+  });
+}
+
+function encodeWAV(samples, sampleRate) {
+  var buffer = new ArrayBuffer(44 + samples.length * 2);
+  var view = new DataView(buffer);
+
+  function writeString(offset, str) {
+    for (var i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
+  }
+
+  var byteRate = sampleRate * 2;
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);        // PCM
+  view.setUint16(22, 1, true);        // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, 2, true);        // block align
+  view.setUint16(34, 16, true);       // bits per sample
+  writeString(36, 'data');
+  view.setUint32(40, samples.length * 2, true);
+
+  var offset = 44;
+  for (var i = 0; i < samples.length; i++) {
+    var s = Math.max(-1, Math.min(1, samples[i]));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+    offset += 2;
+  }
+
+  return new Blob([buffer], { type: 'audio/wav' });
 }
 
 // ─── LOG ─────────────────────────────────────────────────────────────────────
