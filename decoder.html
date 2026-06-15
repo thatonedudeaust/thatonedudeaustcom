@@ -476,49 +476,60 @@ function decodeSAME(samples, SR) {
   var BIT_SAMPLES = Math.round(SR / BAUD);
   var results = [];
 
-  // Bandpass filter around MARK and SPACE frequencies using Goertzel algorithm
-  // Scan through audio looking for FSK signal energy
-  var windowSize = BIT_SAMPLES * 2;
-  var step = Math.round(BIT_SAMPLES / 4);
+  // Step 1: Demodulate entire audio into a bitstream using per-bit Goertzel
+  // Use half-bit step for better sync recovery
+  var bitStream = [];
+  var bitPositions = [];
 
-  var markEnergy = [];
-  var spaceEnergy = [];
-
-  for (var i = 0; i < samples.length - windowSize; i += step) {
-    markEnergy.push(goertzel(samples, i, windowSize, MARK, SR));
-    spaceEnergy.push(goertzel(samples, i, windowSize, SPACE, SR));
+  for (var i = 0; i + BIT_SAMPLES < samples.length; i += BIT_SAMPLES) {
+    var mE = goertzel(samples, i, BIT_SAMPLES, MARK, SR);
+    var sE = goertzel(samples, i, BIT_SAMPLES, SPACE, SR);
+    bitStream.push(mE > sE ? 1 : 0);
+    bitPositions.push(i);
   }
 
-  // Find regions with strong FSK signal
-  var threshold = 0.02;
-  var inBurst = false;
-  var burstStart = 0;
+  // Step 2: Search bitstream for ZCZC (ASCII) pattern
+  // ZCZC = 0x5A 0x43 0x5A 0x43
+  var ZCZC_BYTES = [0x5A, 0x43, 0x5A, 0x43];
+  var NNNN_BYTES = [0x4E, 0x4E, 0x4E, 0x4E];
 
-  for (var j = 0; j < markEnergy.length; j++) {
-    var energy = markEnergy[j] + spaceEnergy[j];
-    if (!inBurst && energy > threshold) {
-      inBurst = true;
-      burstStart = j;
-    } else if (inBurst && energy < threshold * 0.3) {
-      inBurst = false;
-      var burstStartSample = burstStart * step;
-      var burstEndSample = j * step;
+  // Try each bit offset 0-7 as sync point
+  for (var offset = 0; offset < BIT_SAMPLES; offset += Math.round(BIT_SAMPLES / 8)) {
+    var bits = demodWithOffset(samples, SR, BIT_SAMPLES, MARK, SPACE, offset);
 
-      // Try to decode this burst
-      var decoded = decodeBurst(samples, burstStartSample, burstEndSample, BIT_SAMPLES, MARK, SPACE, SR);
-      if (decoded) {
-        results.push({ text: decoded, timeOffset: burstStartSample / SR });
+    // Search for ZCZC in the bitstream (LSB first)
+    for (var startBit = 0; startBit < bits.length - 200 * 8; startBit++) {
+      if (matchesBytes(bits, startBit, ZCZC_BYTES)) {
+        var text = extractString(bits, startBit, 200);
+        if (text && text.startsWith('ZCZC')) {
+          var timeOffset = (bitPositions[Math.floor(startBit / 1)] || 0) / SR;
+          // Check not a duplicate
+          var isDupe = results.some(function(r) { return r.text === text; });
+          if (!isDupe) {
+            results.push({ text: text, timeOffset: (startBit * BIT_SAMPLES + offset) / SR });
+            startBit += 100 * 8; // Skip ahead past this burst
+          }
+        }
+      }
+      if (matchesBytes(bits, startBit, NNNN_BYTES)) {
+        var isDupe2 = results.some(function(r) { return r.text === 'NNNN'; });
+        if (!isDupe2) {
+          results.push({ text: 'NNNN', timeOffset: (startBit * BIT_SAMPLES + offset) / SR });
+        }
       }
     }
   }
 
-  // Handle burst that goes to end
-  if (inBurst) {
-    var decoded2 = decodeBurst(samples, burstStart * step, samples.length, BIT_SAMPLES, MARK, SPACE, SR);
-    if (decoded2) results.push({ text: decoded2, timeOffset: burstStart * step / SR });
-  }
+  // Sort by time
+  results.sort(function(a, b) { return a.timeOffset - b.timeOffset; });
 
-  return results;
+  // Deduplicate by content
+  var seen = {};
+  return results.filter(function(r) {
+    if (seen[r.text]) return false;
+    seen[r.text] = true;
+    return true;
+  });
 }
 
 function goertzel(samples, offset, N, targetFreq, SR) {
@@ -538,44 +549,49 @@ function goertzel(samples, offset, N, targetFreq, SR) {
   return (real * real + imag * imag) / (N * N);
 }
 
-function decodeBurst(samples, start, end, bitSamples, markFreq, spaceFreq, SR) {
-  // Skip preamble (16 bytes = 128 bits)
-  var preambleBits = 128;
-  var dataStart = start + preambleBits * bitSamples;
+function demodWithOffset(samples, SR, bitSamples, markFreq, spaceFreq, offset) {
+  var bits = [];
+  for (var i = offset; i + bitSamples < samples.length; i += bitSamples) {
+    var mE = goertzel(samples, i, bitSamples, markFreq, SR);
+    var sE = goertzel(samples, i, bitSamples, spaceFreq, SR);
+    bits.push(mE > sE ? 1 : 0);
+  }
+  return bits;
+}
 
-  if (dataStart >= end) return null;
-
-  var decoded = '';
-  var pos = dataStart;
-
-  while (pos + bitSamples * 8 <= end && decoded.length < 200) {
+function matchesBytes(bits, startBit, targetBytes) {
+  for (var b = 0; b < targetBytes.length; b++) {
     var byte = 0;
     for (var bit = 0; bit < 8; bit++) {
-      var markE = goertzel(samples, pos + bit * bitSamples, bitSamples, markFreq, SR);
-      var spaceE = goertzel(samples, pos + bit * bitSamples, bitSamples, spaceFreq, SR);
-      if (markE > spaceE) byte |= (1 << bit);
+      var idx = startBit + b * 8 + bit;
+      if (idx >= bits.length) return false;
+      if (bits[idx]) byte |= (1 << bit);
+    }
+    if (byte !== targetBytes[b]) return false;
+  }
+  return true;
+}
+
+function extractString(bits, startBit, maxChars) {
+  var str = '';
+  for (var c = 0; c < maxChars; c++) {
+    var byte = 0;
+    for (var bit = 0; bit < 8; bit++) {
+      var idx = startBit + c * 8 + bit;
+      if (idx >= bits.length) break;
+      if (bits[idx]) byte |= (1 << bit);
     }
     var ch = String.fromCharCode(byte);
-    decoded += ch;
-    pos += bitSamples * 8;
-
-    // Stop if we hit end of SAME header
-    if (decoded.length > 10 && decoded.slice(-1) === '-' && decoded.split('-').length >= 5) {
-      var lastDash = decoded.lastIndexOf('-');
-      if (lastDash > decoded.length - 3) break;
+    // Only printable ASCII
+    if (byte < 32 || byte > 126) {
+      if (str.length > 8) break;
+      continue;
     }
+    str += ch;
+    // Stop at end of SAME header (callsign followed by -)
+    if (str.length > 20 && str.endsWith('-') && str.split('-').length >= 6) break;
   }
-
-  // Validate: must start with ZCZC
-  if (decoded.indexOf('ZCZC') === -1 && decoded.indexOf('NNNN') === -1) return null;
-
-  var zczc = decoded.indexOf('ZCZC');
-  if (zczc !== -1) return decoded.slice(zczc);
-
-  var nnnn = decoded.indexOf('NNNN');
-  if (nnnn !== -1) return 'NNNN';
-
-  return null;
+  return str.startsWith('ZCZC') ? str : null;
 }
 
 // ─── ATTENTION TONE DETECTOR ─────────────────────────────────────────────────
