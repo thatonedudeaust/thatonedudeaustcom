@@ -30,6 +30,18 @@
       --font-mono: 'IBM Plex Mono', monospace;
     }
 
+    /* LIGHT MODE */
+    [data-mode="light"] {
+      --bg: #f7f6f3;
+      --bg2: #ffffff;
+      --bg3: #ececea;
+      --border: rgba(0,0,0,0.08);
+      --border-hover: rgba(0,0,0,0.16);
+      --text: #1a1a1b;
+      --text-muted: #8a8a92;
+      --text-mid: #55555c;
+    }
+
     /* THEMES */
     [data-theme="blue"] {
       --accent: #5cb8ff;
@@ -60,7 +72,27 @@
       font-family: var(--font-display);
       min-height: 100vh;
       overflow-x: hidden;
+      transition: background 0.3s, color 0.3s;
     }
+
+    /* MODE TOGGLE */
+    .mode-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--border-hover);
+      background: transparent;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.95rem;
+      transition: all 0.2s;
+      margin-left: 1rem;
+    }
+
+    .mode-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
     /* noise overlay */
     body::before {
@@ -71,7 +103,10 @@
       pointer-events: none;
       z-index: 0;
       opacity: 0.4;
+      transition: opacity 0.3s;
     }
+
+    [data-mode="light"] body::before { opacity: 0.15; }
 
     /* NAV */
     nav {
@@ -783,7 +818,8 @@
       <li><a href="#projects">projects</a></li>
       <li><a href="#skills">skills</a></li>
       <li><a href="#contact">contact</a></li>
-      <li><a href="/login.html" id="auth-nav-link">login</a></li>
+      <li><a href="/login" id="auth-nav-link">login</a></li>
+      <li><button class="mode-toggle" id="mode-toggle" onclick="toggleMode()" title="Toggle light/dark mode">🌙</button></li>
     </ul>
   </nav>
 
@@ -1010,7 +1046,7 @@
       <a href="https://www.roblox.com/users/search?keyword=thatonedudeaust" target="_blank">Roblox</a>
       <a href="https://www.ebay.com/usr/thatonedudeaust" target="_blank">eBay</a>
       <a href="https://thatonedudeaust.github.io/weather-radio" target="_blank">Weather Radio</a>
-      <a href="/changelog.html">Changelog</a>
+      <a href="/changelog">Changelog</a>
     </div>
     <p id="visitor-count" style="font-family:var(--font-mono);font-size:0.72rem;color:var(--text-muted)">👁 — visitors</p>
   </footer>
@@ -1164,6 +1200,29 @@
     }
 
     nextFact();
+
+    // LIGHT/DARK MODE TOGGLE
+    function applyMode(mode) {
+      if (mode === 'light') {
+        document.documentElement.setAttribute('data-mode', 'light');
+        document.getElementById('mode-toggle').textContent = '☀️';
+      } else {
+        document.documentElement.removeAttribute('data-mode');
+        document.getElementById('mode-toggle').textContent = '🌙';
+      }
+    }
+
+    function toggleMode() {
+      var current = document.documentElement.getAttribute('data-mode');
+      var next = current === 'light' ? 'dark' : 'light';
+      applyMode(next);
+      localStorage.setItem('site-mode', next);
+    }
+
+    (function() {
+      var saved = localStorage.getItem('site-mode');
+      if (saved === 'light') applyMode('light');
+    })();
 
     initAuth();
     loadAnnouncement();
