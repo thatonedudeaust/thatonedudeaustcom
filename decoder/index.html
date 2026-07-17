@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EAS Decoder — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg2: #111113;
+      --bg3: #18181c;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8;
+      --text-muted: #6b6b72;
+      --text-mid: #9a9aa3;
+      --accent: #c8f04a;
+      --red: #ff5c5c;
+      --orange: #ff9f4a;
+      --blue: #5cb8ff;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.4;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 3rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,11,0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+    .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+
+    main { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 4rem 3rem; }
+
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards; }
+    h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
+    .page-desc { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
+
+    /* UPLOAD ZONE */
+    .upload-zone {
+      border: 2px dashed var(--border-hover);
+      border-radius: 8px;
+      padding: 3rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 1.5rem;
+      animation: fadeUp 0.5s ease forwards 0.3s;
+      opacity: 0;
+      position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover { border-color: var(--accent); background: rgba(200,240,74,0.03); }
+
+    .upload-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .upload-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .upload-desc { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); }
+    .upload-input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; }
+
+    /* PROGRESS */
+    .progress-bar {
+      display: none;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      height: 4px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+
+    .progress-bar.visible { display: block; }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .progress-label {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.5rem;
+      display: none;
+    }
+
+    .progress-label.visible { display: block; }
+
+    /* RESULTS */
+    .results { display: none; }
+    .results.visible { display: block; animation: fadeUp 0.5s ease forwards; }
+
+    .section-label {
+      display: flex; align-items: center; gap: 1rem;
+      font-family: var(--font-mono); font-size: 0.72rem;
+      color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+    .section-label::after { content: ''; flex: 1; max-width: 80px; height: 1px; background: var(--border-hover); }
+
+    /* RAW HEADER */
+    .raw-header {
+      font-family: var(--font-mono); font-size: 0.82rem;
+      color: var(--accent); background: var(--bg2);
+      border: 1px solid var(--border); border-radius: 6px;
+      padding: 1rem 1.25rem; word-break: break-all;
+      line-height: 1.7; margin-bottom: 2rem;
+    }
+
+    /* PARSED FIELDS */
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+    }
+
+    .field-box {
+      background: var(--bg2);
+      padding: 1.25rem 1.5rem;
+      transition: background 0.2s;
+    }
+
+    .field-box:hover { background: var(--bg3); }
+    .field-box.full { grid-column: 1 / -1; }
+
+    .field-label {
+      font-family: var(--font-mono); font-size: 0.68rem;
+      color: var(--text-muted); letter-spacing: 0.1em;
+      text-transform: uppercase; margin-bottom: 0.4rem;
+    }
+
+    .field-value {
+      font-family: var(--font-mono); font-size: 0.88rem;
+      color: var(--text); font-weight: 500; line-height: 1.5;
+    }
+
+    .field-value.accent { color: var(--accent); }
+    .field-value.red { color: var(--red); }
+    .field-value.orange { color: var(--orange); }
+    .field-value.blue { color: var(--blue); }
+
+    /* BADGE */
+    .event-badge {
+      display: inline-flex; align-items: center;
+      padding: 0.3rem 0.8rem;
+      border-radius: 4px; font-family: var(--font-mono);
+      font-size: 0.82rem; font-weight: 600; letter-spacing: 0.06em;
+    }
+
+    /* LOCATIONS LIST */
+    .locations-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .location-tag {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 3px; padding: 0.25rem 0.6rem;
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-mid);
+    }
+
+    /* TONE DETECTION */
+    .tone-result {
+      display: flex; align-items: center; gap: 1rem;
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.25rem 1.5rem;
+      margin-bottom: 2rem; font-family: var(--font-mono); font-size: 0.82rem;
+    }
+
+    .tone-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .tone-dot.detected { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .tone-dot.not-detected { background: var(--text-muted); }
+
+    /* BURST COUNT */
+    .burst-badges { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 2rem; }
+    .burst-badge {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 4px; padding: 0.5rem 1rem;
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-mid);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .burst-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+
+    /* LOG */
+    .decode-log {
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 6px; padding: 1rem; max-height: 150px;
+      overflow-y: auto; line-height: 1.8; margin-bottom: 2rem;
+    }
+
+    .log-line { display: flex; gap: 0.75rem; }
+    .log-time { color: var(--accent); flex-shrink: 0; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.4rem; font-family: var(--font-mono);
+      font-size: 0.78rem; font-weight: 500; letter-spacing: 0.06em;
+      border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none;
+    }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-hover); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      main { padding: 2rem 1.5rem; }
+      .fields-grid { grid-template-columns: 1fr; }
+      .field-box.full { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">thatonedudeaust.com</a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+
+<main>
+  <p class="page-eyebrow">Emergency Alert System</p>
+  <h1>EAS Decoder</h1>
+  <p class="page-desc">Upload an audio file containing a SAME EAS header. The decoder will extract and parse all fields including event code, originator, affected areas, valid time, and detect the attention tone.</p>
+
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" class="upload-input" id="file-input" accept="audio/*" />
+    <div class="upload-icon">📂</div>
+    <div class="upload-title">Drop an audio file here</div>
+    <div class="upload-desc">Supports WAV, MP3, OGG, and most audio formats · Click to browse</div>
+  </div>
+
+  <div class="progress-label" id="progress-label">Analyzing audio...</div>
+  <div class="progress-bar" id="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+
+  <div class="results" id="results">
+
+    <div class="section-label">Decode Log</div>
+    <div class="decode-log" id="decode-log"></div>
+
+    <div id="burst-section" style="display:none">
+      <div class="section-label">Detected Bursts</div>
+      <div class="burst-badges" id="burst-badges"></div>
+    </div>
+
+    <div id="tone-section" style="display:none">
+      <div class="section-label">Attention Tone</div>
+      <div class="tone-result" id="tone-result"></div>
+    </div>
+
+    <div id="parsed-section" style="display:none">
+      <div class="section-label">Raw SAME Header</div>
+      <div class="raw-header" id="raw-header"></div>
+
+      <div class="section-label">Parsed Fields</div>
+      <div class="fields-grid" id="fields-grid"></div>
+    </div>
+
+    <button class="btn btn-ghost" onclick="resetDecoder()">↩ Decode another file</button>
+  </div>
+</main>
+
+<script>
+// ─── EAS LOOKUP TABLES ───────────────────────────────────────────────────────
+var EVENT_CODES = {
+  "BLU":"Blue Alert","CAE":"Child Abduction Emergency","CDW":"Civil Danger Warning",
+  "CEM":"Civil Emergency Message","CFA":"Coastal Flood Watch","CFW":"Coastal Flood Warning",
+  "DBW":"Dam Break Warning","DEW":"Destruct Event Warning","DUS":"Dust Storm Warning",
+  "EAN":"Emergency Action Notification","EAT":"Emergency Action Termination",
+  "EQW":"Earthquake Warning","EVA":"Evacuation Watch","EVI":"Evacuation Immediate",
+  "EWW":"Extreme Wind Warning","FAW":"Flood Watch (Areal)","FFS":"Flash Flood Statement",
+  "FFW":"Flash Flood Warning","FLA":"Flood Watch (Areal)","FLS":"Flood Statement",
+  "FLW":"Flood Warning","FRW":"Fire Warning","FSW":"Flash Freeze Warning",
+  "FZW":"Freeze Warning","HLS":"Hurricane Local Statement","HMW":"Hazardous Materials Warning",
+  "HUA":"Hurricane Watch","HUW":"Hurricane Warning","HWA":"High Wind Watch",
+  "HWW":"High Wind Warning","IBW":"Iceberg Warning","IFW":"Industrial Fire Warning",
+  "LAE":"Local Area Emergency","LEW":"Law Enforcement Warning","LSW":"Land Slide Warning",
+  "MAN":"Manual Message","NAT":"National Audible Test","NIC":"National Information Center",
+  "NMN":"Network Message Notification","NPT":"National Periodic Test",
+  "NST":"National Silent Test","NUW":"Nuclear Plant Warning",
+  "POS":"Practice/Demo Warning","RHW":"Radiological Hazard Warning",
+  "RMT":"Required Monthly Test","RWT":"Required Weekly Test",
+  "SMW":"Special Marine Warning","SPS":"Special Weather Statement",
+  "SPW":"Shelter in Place Warning","SQW":"Snow Squall Warning","SSA":"Storm Surge Watch",
+  "SSW":"Storm Surge Warning","SVA":"Severe Thunderstorm Watch",
+  "SVR":"Severe Thunderstorm Warning","SVS":"Severe Weather Statement",
+  "TOA":"Tornado Watch","TOR":"Tornado Warning","TRA":"Tropical Storm Watch",
+  "TRW":"Tropical Storm Warning","TSA":"Tsunami Watch","TSW":"Tsunami Warning",
+  "TXB":"Transmitter Backup On","TXF":"Transmitter Carrier Off",
+  "TXO":"Transmitter Carrier On","TXP":"Transmitter Primary On",
+  "VOW":"Volcano Warning","WFA":"Wild Fire Watch","WFW":"Wild Fire Warning",
+  "WSA":"Winter Storm Watch","WSW":"Winter Storm Warning","WWA":"Winter Weather Advisory",
+  "ZFW":"Freezing Fog Advisory"
+};
+
+var ORIGINATORS = {
+  "PEP":"Primary Entry Point System","CIV":"Civil Authorities",
+  "WXR":"National Weather Service","EAS":"EAS Participant"
+};
+
+var STATE_CODES = {
+  "00":"United States","01":"Alabama","02":"Alaska","04":"Arizona","05":"Arkansas",
+  "06":"California","08":"Colorado","09":"Connecticut","10":"Delaware","11":"District of Columbia",
+  "12":"Florida","13":"Georgia","15":"Hawaii","16":"Idaho","17":"Illinois","18":"Indiana",
+  "19":"Iowa","20":"Kansas","21":"Kentucky","22":"Louisiana","23":"Maine","24":"Maryland",
+  "25":"Massachusetts","26":"Michigan","27":"Minnesota","28":"Mississippi","29":"Missouri",
+  "30":"Montana","31":"Nebraska","32":"Nevada","33":"New Hampshire","34":"New Jersey",
+  "35":"New Mexico","36":"New York","37":"North Carolina","38":"North Dakota","39":"Ohio",
+  "40":"Oklahoma","41":"Oregon","42":"Pennsylvania","44":"Rhode Island","45":"South Carolina",
+  "46":"South Dakota","47":"Tennessee","48":"Texas","49":"Utah","50":"Vermont",
+  "51":"Virginia","53":"Washington","54":"West Virginia","55":"Wisconsin","56":"Wyoming",
+  "72":"Puerto Rico","78":"Virgin Islands"
+};
+
+var EVENT_SEVERITY = {
+  "TOR":"red","EAN":"red","EVI":"red","TSW":"red","SSW":"red","HUW":"red","EQW":"red",
+  "NUW":"red","VOW":"red","EWW":"red","DBW":"red","CDW":"red","HMW":"red",
+  "SVR":"orange","FFW":"orange","HWW":"orange","WSW":"orange","FLW":"orange",
+  "SMW":"orange","CFW":"orange","TOA":"orange","SVA":"orange","HUA":"orange",
+  "RWT":"blue","RMT":"blue","NAT":"blue","NST":"blue","NPT":"blue",
+  "SPS":"blue","SVS":"blue","FLS":"blue"
+};
+
+// ─── FSK DECODER ─────────────────────────────────────────────────────────────
+var audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+// Setup drag and drop
+var uploadZone = document.getElementById('upload-zone');
+uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('dragover'); });
+uploadZone.addEventListener('drop', function(e) {
+  e.preventDefault();
+  uploadZone.classList.remove('dragover');
+  var file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+});
+
+document.getElementById('file-input').addEventListener('change', function() {
+  if (this.files[0]) processFile(this.files[0]);
+});
+
+function setProgress(pct, label) {
+  document.getElementById('progress-bar').classList.add('visible');
+  document.getElementById('progress-label').classList.add('visible');
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = label;
+}
+
+function addLog(msg) {
+  var el = document.getElementById('decode-log');
+  var now = new Date();
+  var time = '[' + String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0') + ']';
+  var line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = '<span class="log-time">' + time + '</span><span>' + msg + '</span>';
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+
+async function processFile(file) {
+  document.getElementById('results').classList.add('visible');
+  document.getElementById('decode-log').innerHTML = '';
+  document.getElementById('burst-section').style.display = 'none';
+  document.getElementById('tone-section').style.display = 'none';
+  document.getElementById('parsed-section').style.display = 'none';
+  document.getElementById('upload-zone').style.display = 'none';
+
+  addLog('Loading file: ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)');
+  setProgress(10, 'Decoding audio file...');
+
+  try {
+    var arrayBuffer = await file.arrayBuffer();
+    var ctx = getAudioCtx();
+    var audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+
+    addLog('Audio decoded: ' + audioBuffer.duration.toFixed(2) + 's, ' + audioBuffer.sampleRate + ' Hz, ' + audioBuffer.numberOfChannels + ' channel(s)');
+    setProgress(25, 'Extracting audio samples...');
+
+    // Get mono samples
+    var samples = audioBuffer.getChannelData(0);
+    var SR = audioBuffer.sampleRate;
+
+    setProgress(40, 'Scanning for SAME FSK bursts...');
+    addLog('Scanning for FSK SAME bursts at 520.83 baud...');
+
+    var headers = decodeSAME(samples, SR);
+
+    setProgress(65, 'Detecting attention tone...');
+    addLog('Scanning for attention tone (853 Hz + 960 Hz)...');
+
+    var toneResult = detectAttentionTone(samples, SR);
+
+    setProgress(85, 'Parsing SAME fields...');
+
+    // Show burst results
+    if (headers.length > 0) {
+      addLog('Found ' + headers.length + ' SAME burst(s).');
+      document.getElementById('burst-section').style.display = 'block';
+      var burstBadges = document.getElementById('burst-badges');
+      burstBadges.innerHTML = headers.map(function(h, i) {
+        return '<div class="burst-badge"><div class="dot"></div>Burst ' + (i+1) + ' @ ' + h.timeOffset.toFixed(2) + 's</div>';
+      }).join('');
+
+      // Parse the first valid header
+      var bestHeader = headers[0].text;
+      document.getElementById('parsed-section').style.display = 'block';
+      document.getElementById('raw-header').textContent = bestHeader;
+      renderParsedFields(bestHeader);
+    } else {
+      addLog('No SAME header detected in this file.');
+      document.getElementById('burst-section').style.display = 'block';
+      document.getElementById('burst-badges').innerHTML = '<div class="burst-badge" style="color:var(--red)">No SAME bursts detected</div>';
+    }
+
+    // Show tone result
+    document.getElementById('tone-section').style.display = 'block';
+    var toneEl = document.getElementById('tone-result');
+    if (toneResult.detected) {
+      toneEl.innerHTML = '<div class="tone-dot detected"></div><span>Attention tone detected at <span style="color:var(--accent)">' + toneResult.timeOffset.toFixed(2) + 's</span> — duration ~<span style="color:var(--accent)">' + toneResult.duration.toFixed(1) + 's</span> — 853 Hz + 960 Hz dual tone confirmed</span>';
+      addLog('Attention tone detected at ' + toneResult.timeOffset.toFixed(2) + 's, duration ~' + toneResult.duration.toFixed(1) + 's');
+    } else {
+      toneEl.innerHTML = '<div class="tone-dot not-detected"></div><span style="color:var(--text-muted)">No attention tone detected in this file.</span>';
+      addLog('No attention tone detected.');
+    }
+
+    setProgress(100, 'Done!');
+    addLog('Decode complete.');
+
+    setTimeout(function() {
+      document.getElementById('progress-bar').classList.remove('visible');
+      document.getElementById('progress-label').classList.remove('visible');
+    }, 1000);
+
+  } catch(e) {
+    addLog('Error: ' + e.message);
+    setProgress(100, 'Error decoding file.');
+  }
+}
+
+// ─── FSK SAME DECODER ────────────────────────────────────────────────────────
+function decodeSAME(samples, SR) {
+  var BAUD = 520.83;
+  var MARK = 2083.3;
+  var SPACE = 1562.5;
+  var BIT_SAMPLES = Math.round(SR / BAUD);
+  var results = [];
+
+  // Step 1: Demodulate entire audio into a bitstream using per-bit Goertzel
+  // Use half-bit step for better sync recovery
+  var bitStream = [];
+  var bitPositions = [];
+
+  for (var i = 0; i + BIT_SAMPLES < samples.length; i += BIT_SAMPLES) {
+    var mE = goertzel(samples, i, BIT_SAMPLES, MARK, SR);
+    var sE = goertzel(samples, i, BIT_SAMPLES, SPACE, SR);
+    bitStream.push(mE > sE ? 1 : 0);
+    bitPositions.push(i);
+  }
+
+  // Step 2: Search bitstream for ZCZC (ASCII) pattern
+  // ZCZC = 0x5A 0x43 0x5A 0x43
+  var ZCZC_BYTES = [0x5A, 0x43, 0x5A, 0x43];
+  var NNNN_BYTES = [0x4E, 0x4E, 0x4E, 0x4E];
+
+  // Try each bit offset 0-7 as sync point
+  for (var offset = 0; offset < BIT_SAMPLES; offset += Math.round(BIT_SAMPLES / 8)) {
+    var bits = demodWithOffset(samples, SR, BIT_SAMPLES, MARK, SPACE, offset);
+
+    // Search for ZCZC in the bitstream (LSB first)
+    for (var startBit = 0; startBit < bits.length - 200 * 8; startBit++) {
+      if (matchesBytes(bits, startBit, ZCZC_BYTES)) {
+        var text = extractString(bits, startBit, 200);
+        if (text && text.startsWith('ZCZC')) {
+          var timeOffset = (bitPositions[Math.floor(startBit / 1)] || 0) / SR;
+          // Check not a duplicate
+          var isDupe = results.some(function(r) { return r.text === text; });
+          if (!isDupe) {
+            results.push({ text: text, timeOffset: (startBit * BIT_SAMPLES + offset) / SR });
+            startBit += 100 * 8; // Skip ahead past this burst
+          }
+        }
+      }
+      if (matchesBytes(bits, startBit, NNNN_BYTES)) {
+        var isDupe2 = results.some(function(r) { return r.text === 'NNNN'; });
+        if (!isDupe2) {
+          results.push({ text: 'NNNN', timeOffset: (startBit * BIT_SAMPLES + offset) / SR });
+        }
+      }
+    }
+  }
+
+  // Sort by time
+  results.sort(function(a, b) { return a.timeOffset - b.timeOffset; });
+
+  // Deduplicate by content
+  var seen = {};
+  return results.filter(function(r) {
+    if (seen[r.text]) return false;
+    seen[r.text] = true;
+    return true;
+  });
+}
+
+function goertzel(samples, offset, N, targetFreq, SR) {
+  var k = Math.round(N * targetFreq / SR);
+  var omega = 2 * Math.PI * k / N;
+  var cosine = Math.cos(omega);
+  var coeff = 2 * cosine;
+  var s0 = 0, s1 = 0, s2 = 0;
+
+  for (var i = 0; i < N && offset + i < samples.length; i++) {
+    s0 = samples[offset + i] + coeff * s1 - s2;
+    s2 = s1; s1 = s0;
+  }
+
+  var real = s1 - s2 * Math.cos(omega);
+  var imag = s2 * Math.sin(omega);
+  return (real * real + imag * imag) / (N * N);
+}
+
+function demodWithOffset(samples, SR, bitSamples, markFreq, spaceFreq, offset) {
+  var bits = [];
+  for (var i = offset; i + bitSamples < samples.length; i += bitSamples) {
+    var mE = goertzel(samples, i, bitSamples, markFreq, SR);
+    var sE = goertzel(samples, i, bitSamples, spaceFreq, SR);
+    bits.push(mE > sE ? 1 : 0);
+  }
+  return bits;
+}
+
+function matchesBytes(bits, startBit, targetBytes) {
+  for (var b = 0; b < targetBytes.length; b++) {
+    var byte = 0;
+    for (var bit = 0; bit < 8; bit++) {
+      var idx = startBit + b * 8 + bit;
+      if (idx >= bits.length) return false;
+      if (bits[idx]) byte |= (1 << bit);
+    }
+    if (byte !== targetBytes[b]) return false;
+  }
+  return true;
+}
+
+function extractString(bits, startBit, maxChars) {
+  var str = '';
+  for (var c = 0; c < maxChars; c++) {
+    var byte = 0;
+    for (var bit = 0; bit < 8; bit++) {
+      var idx = startBit + c * 8 + bit;
+      if (idx >= bits.length) break;
+      if (bits[idx]) byte |= (1 << bit);
+    }
+    var ch = String.fromCharCode(byte);
+    // Only printable ASCII
+    if (byte < 32 || byte > 126) {
+      if (str.length > 8) break;
+      continue;
+    }
+    str += ch;
+    // Stop at end of SAME header (callsign followed by -)
+    if (str.length > 20 && str.endsWith('-') && str.split('-').length >= 6) break;
+  }
+  return str.startsWith('ZCZC') ? str : null;
+}
+
+// ─── ATTENTION TONE DETECTOR ─────────────────────────────────────────────────
+function detectAttentionTone(samples, SR) {
+  var windowSize = Math.round(SR * 0.1); // 100ms windows
+  var step = Math.round(SR * 0.05);      // 50ms step
+  var threshold = 0.005;
+
+  var toneStart = -1;
+  var toneEnd = -1;
+
+  for (var i = 0; i < samples.length - windowSize; i += step) {
+    var e853 = goertzel(samples, i, windowSize, 853, SR);
+    var e960 = goertzel(samples, i, windowSize, 960, SR);
+    var combined = Math.min(e853, e960); // Both must be present
+
+    if (combined > threshold) {
+      if (toneStart === -1) toneStart = i;
+      toneEnd = i + windowSize;
+    }
+  }
+
+  if (toneStart === -1 || (toneEnd - toneStart) / SR < 0.5) {
+    return { detected: false };
+  }
+
+  return {
+    detected: true,
+    timeOffset: toneStart / SR,
+    duration: (toneEnd - toneStart) / SR
+  };
+}
+
+// ─── PARSE & RENDER SAME FIELDS ──────────────────────────────────────────────
+function renderParsedFields(header) {
+  var grid = document.getElementById('fields-grid');
+  grid.innerHTML = '';
+
+  if (header === 'NNNN') {
+    grid.innerHTML = '<div class="field-box full"><div class="field-label">Message Type</div><div class="field-value accent">End of Message (NNNN)</div></div>';
+    return;
+  }
+
+  // Parse: ZCZC-ORG-EVT-+NNNSSS+TTTT-JJJHHMM-LLLLLLLL-
+  try {
+    var clean = header.replace('ZCZC-', '');
+    var parts = clean.split('-');
+
+    if (parts.length < 4) {
+      grid.innerHTML = '<div class="field-box full"><div class="field-label">Error</div><div class="field-value red">Could not parse SAME header structure.</div></div>';
+      return;
+    }
+
+    var origCode = parts[0];
+    var eventCode = parts[1];
+
+    // Parse locations: +NNNSSS+NNNSSS...+TTTT
+    var locString = parts[2];
+    var locParts = locString.split('+').filter(function(p) { return p.length > 0; });
+    var locations = [];
+    var purge = '';
+
+    locParts.forEach(function(p) {
+      if (p.length === 4 && /^\d+$/.test(p)) {
+        purge = p;
+      } else if (p.length === 6 && /^\d+$/.test(p)) {
+        locations.push(p);
+      }
+    });
+
+    var timeCode = parts[3]; // JJJHHMM
+    var callsign = parts[4] ? parts[4].replace(/-/g, '').trim() : 'Unknown';
+
+    // Parse purge time
+    var purgeHours = purge ? parseInt(purge.slice(0,2)) : 0;
+    var purgeMins = purge ? parseInt(purge.slice(2,4)) : 0;
+    var purgeStr = purgeHours + 'h ' + (purgeMins > 0 ? purgeMins + 'm' : '');
+
+    // Parse issue time (JJJHHMM = Julian day + UTC HHMM)
+    var jjj = timeCode ? parseInt(timeCode.slice(0,3)) : 0;
+    var hh  = timeCode ? parseInt(timeCode.slice(3,5)) : 0;
+    var mm  = timeCode ? parseInt(timeCode.slice(5,7)) : 0;
+    var now = new Date();
+    var issueDate = new Date(now.getFullYear(), 0, jjj, hh, mm, 0);
+    var issueDateStr = isNaN(issueDate.getTime()) ? timeCode : issueDate.toUTCString();
+
+    // Event name and severity
+    var eventName = EVENT_CODES[eventCode] || 'Unknown Event';
+    var severity = EVENT_SEVERITY[eventCode] || 'accent';
+    var origName = ORIGINATORS[origCode] || origCode;
+
+    // Build location strings
+    var locationStrs = locations.map(function(fips) {
+      var sub = fips[0];
+      var state = fips.slice(1,3);
+      var county = fips.slice(3,6);
+      var stateName = STATE_CODES[state] || ('State ' + state);
+      var subStr = sub !== '0' ? 'Zone ' + sub + ' of ' : '';
+      return subStr + stateName + ' (' + county + ')';
+    });
+
+    // Render
+    var severityColors = { red: 'red', orange: 'orange', blue: 'blue', accent: 'accent' };
+    var colorClass = severityColors[severity] || 'accent';
+
+    var html = '';
+
+    html += '<div class="field-box full">';
+    html += '<div class="field-label">Event</div>';
+    html += '<div class="field-value ' + colorClass + '" style="font-size:1.1rem;font-weight:800">' + eventCode + ' — ' + eventName + '</div>';
+    html += '</div>';
+
+    html += '<div class="field-box">';
+    html += '<div class="field-label">Originator</div>';
+    html += '<div class="field-value">' + origCode + ' — ' + origName + '</div>';
+    html += '</div>';
+
+    html += '<div class="field-box">';
+    html += '<div class="field-label">Callsign / Sender</div>';
+    html += '<div class="field-value accent">' + (callsign || 'Unknown') + '</div>';
+    html += '</div>';
+
+    html += '<div class="field-box">';
+    html += '<div class="field-label">Issue Time (UTC)</div>';
+    html += '<div class="field-value">' + issueDateStr + '</div>';
+    html += '</div>';
+
+    html += '<div class="field-box">';
+    html += '<div class="field-label">Valid Duration</div>';
+    html += '<div class="field-value">' + (purgeStr || 'Unknown') + '</div>';
+    html += '</div>';
+
+    html += '<div class="field-box full">';
+    html += '<div class="field-label">Affected Areas (' + (locationStrs.length || 'Nationwide') + ' location' + (locationStrs.length !== 1 ? 's' : '') + ')</div>';
+    if (locationStrs.length > 0) {
+      html += '<div class="locations-list">' + locationStrs.map(function(l) { return '<div class="location-tag">' + l + '</div>'; }).join('') + '</div>';
+    } else {
+      html += '<div class="field-value accent">Nationwide (000000)</div>';
+    }
+    html += '</div>';
+
+    grid.innerHTML = html;
+
+  } catch(e) {
+    grid.innerHTML = '<div class="field-box full"><div class="field-label">Parse Error</div><div class="field-value red">' + e.message + '</div></div>';
+  }
+}
+
+function resetDecoder() {
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('upload-zone').style.display = 'block';
+  document.getElementById('progress-bar').classList.remove('visible');
+  document.getElementById('progress-label').classList.remove('visible');
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('file-input').value = '';
+  document.getElementById('decode-log').innerHTML = '';
+}
+</script>
+
+</body>
+</html>
