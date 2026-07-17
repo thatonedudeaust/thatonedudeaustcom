@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Request Account — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="/supabase.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg2: #111113;
+      --bg3: #18181c;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8;
+      --text-muted: #6b6b72;
+      --text-mid: #9a9aa3;
+      --accent: #c8f04a;
+      --red: #ff5c5c;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-display);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .request-box {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 440px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 3rem;
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    .request-logo {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      letter-spacing: 0.1em;
+      margin-bottom: 2rem;
+      display: block;
+      text-decoration: none;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      line-height: 1.7;
+    }
+
+    .field {
+      margin-bottom: 1.25rem;
+    }
+
+    label {
+      display: block;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    input, textarea {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      resize: none;
+    }
+
+    input:focus, textarea:focus { border-color: var(--accent); }
+
+    .btn {
+      width: 100%;
+      padding: 0.85rem;
+      background: var(--accent);
+      color: #0a0a0b;
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .btn:hover { background: transparent; color: var(--accent); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .msg {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 4px;
+      margin-top: 1rem;
+      display: none;
+      line-height: 1.6;
+    }
+
+    .msg-success { background: rgba(200,240,74,0.08); border: 1px solid rgba(200,240,74,0.2); color: var(--accent); }
+    .msg-error   { background: rgba(255,92,92,0.08);  border: 1px solid rgba(255,92,92,0.2);  color: var(--red); }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .back-link:hover { color: var(--accent); }
+
+    /* Success state */
+    .success-state {
+      display: none;
+      text-align: center;
+    }
+
+    .success-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .success-state h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+    }
+
+    .success-state p {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .request-box { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="request-box">
+    <a href="/" class="request-logo">← thatonedudeaust.com</a>
+
+    <!-- Form -->
+    <div id="form-state">
+      <h1>Request access.</h1>
+      <p class="subtitle">Fill out the form below and the site owner will review your request. You'll receive an email if approved.</p>
+
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="req-email" placeholder="your@email.com" />
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="req-password" placeholder="Choose a password" />
+      </div>
+      <div class="field">
+        <label>Reason for access</label>
+        <textarea id="req-reason" rows="3" placeholder="Why do you want an account?"></textarea>
+      </div>
+
+      <button class="btn" id="req-btn">Submit request →</button>
+      <div class="msg msg-error" id="req-error"></div>
+      <a href="/" class="back-link">← Back to home</a>
+    </div>
+
+    <!-- Success -->
+    <div class="success-state" id="success-state">
+      <div class="success-icon">✅</div>
+      <h2>Request sent!</h2>
+      <p>Your request has been submitted. The site owner will review it and you'll receive an email if you're approved.</p>
+      <a href="/" class="back-link" style="margin-top:1.5rem;display:inline-block">← Back to home</a>
+    </div>
+  </div>
+
+  <script>
+    var SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
+    var SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
+    var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    document.getElementById('req-btn').addEventListener('click', submitRequest);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') submitRequest();
+    });
+
+    async function submitRequest() {
+      var email = document.getElementById('req-email').value.trim();
+      var password = document.getElementById('req-password').value;
+      var reason = document.getElementById('req-reason').value.trim();
+      var btn = document.getElementById('req-btn');
+      var errorEl = document.getElementById('req-error');
+
+      errorEl.style.display = 'none';
+
+      if (!email || !password || !reason) {
+        errorEl.textContent = 'Please fill in all fields.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      if (password.length < 6) {
+        errorEl.textContent = 'Password must be at least 6 characters.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = 'Submitting...';
+
+      var { error } = await sb.from('account_requests').insert({
+        email: email,
+        password: password,
+        reason: reason,
+        status: 'pending'
+      });
+
+      if (error) {
+        errorEl.textContent = error.message.includes('duplicate') ? 'A request with this email already exists.' : 'Something went wrong. Please try again.';
+        errorEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Submit request →';
+        return;
+      }
+
+      document.getElementById('form-state').style.display = 'none';
+      document.getElementById('success-state').style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
