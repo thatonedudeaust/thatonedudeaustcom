@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Site Info — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="/supabase.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg2: #111113;
+      --bg3: #18181c;
+      --border: rgba(255,255,255,0.07);
+      --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8;
+      --text-muted: #6b6b72;
+      --text-mid: #9a9aa3;
+      --accent: #c8f04a;
+      --font-display: 'Syne', sans-serif;
+      --font-mono: 'IBM Plex Mono', monospace;
+    }
+
+    body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.4;
+    }
+
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 3rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(10,10,11,0.85);
+      backdrop-filter: blur(12px);
+    }
+
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+    .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+
+    main { position: relative; z-index: 1; max-width: 860px; margin: 0 auto; padding: 4rem 3rem; }
+
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards; }
+    h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
+    .page-desc { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 3rem; line-height: 1.7; animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
+
+    .section-label {
+      display: flex; align-items: center; gap: 1rem;
+      font-family: var(--font-mono); font-size: 0.72rem;
+      color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 1.25rem; margin-top: 2.5rem;
+    }
+    .section-label::after { content: ''; flex: 1; max-width: 80px; height: 1px; background: var(--border-hover); }
+
+    /* PAGES LIST */
+    .pages-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease forwards 0.3s;
+      opacity: 0;
+    }
+
+    .page-item {
+      background: var(--bg2);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-item::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: var(--accent);
+      transform: scaleY(0);
+      transition: transform 0.2s;
+      transform-origin: bottom;
+    }
+
+    .page-item:hover { background: var(--bg3); }
+    .page-item:hover::before { transform: scaleY(1); }
+
+    .page-item-left { display: flex; flex-direction: column; gap: 0.25rem; }
+
+    .page-url {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .page-desc-small {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .page-arrow { color: var(--text-muted); font-size: 1rem; transition: all 0.2s; }
+    .page-item:hover .page-arrow { color: var(--accent); transform: translate(3px, -3px); }
+
+    /* STACK */
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease forwards 0.4s;
+      opacity: 0;
+    }
+
+    .stack-item {
+      background: var(--bg2);
+      padding: 1.25rem 1.5rem;
+      transition: background 0.2s;
+    }
+
+    .stack-item:hover { background: var(--bg3); }
+
+    .stack-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .stack-role { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); }
+
+    /* MISC INFO */
+    .misc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease forwards 0.5s;
+      opacity: 0;
+    }
+
+    .misc-item { background: var(--bg2); padding: 1.25rem 1.5rem; transition: background 0.2s; }
+    .misc-item:hover { background: var(--bg3); }
+    .misc-label { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.4rem; }
+    .misc-value { font-family: var(--font-mono); font-size: 0.88rem; color: var(--accent); font-weight: 500; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      main { padding: 2rem 1.5rem; }
+      .pages-grid, .misc-grid { grid-template-columns: 1fr; }
+      .stack-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">thatonedudeaust.com</a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+
+<main>
+  <p class="page-eyebrow">Site information</p>
+  <h1>Info</h1>
+  <p class="page-desc">A full index of every page on this site, the tech stack it runs on, and some misc details.</p>
+
+  <div class="section-label">Pages</div>
+  <div class="pages-grid">
+    <a href="/" class="page-item">
+      <div class="page-item-left">
+        <div class="page-url">/</div>
+        <div class="page-desc-small">Homepage & portfolio</div>
+      </div>
+      <div class="page-arrow">↗</div>
+    </a>
+    <a href="/login" class="page-item">
+      <div class="page-item-left">
+        <div class="page-url">/login</div>
+        <div class="page-desc-small">Member login</div>
+      </div>
+      <div class="page-arrow">↗</div>
+    </a>
+    <a href="/request" class="page-item">
+      <div class="page-item-left">
+        <div class="page-url">/request</div>
+        <div class="page-desc-small">Request an account</div>
+      </div>
+      <div class="page-arrow">↗</div>
+    </a>
+    <a href="/changelog" class="page-item">
+      <div class="page-item-left">
+        <div class="page-url">/changelog</div>
+        <div class="page-desc-small">Site update history</div>
+      </div>
+      <div class="page-arrow">↗</div>
+    </a>
+    <a href="/eas" class="page-item">
+      <div class="page-item-left">
+        <div class="page-url">/eas</div>
+        <div class="page-desc-small">EAS encoder</div>
+      </div>
+      <div class="page-arrow">↗</div>
+    </a>
+    <a href="/decoder" class="page-item">
+      <div class="page-item-left">
+        <div class="page-url">/decoder</div>
+        <div class="page-desc-small">EAS SAME decoder</div>
+      </div>
+      <div class="page-arrow">↗</div>
+    </a>
+    <a href="/typingtest" class="page-item">
+      <div class="page-item-left">
+        <div class="page-url">/typingtest</div>
+        <div class="page-desc-small">Typing speed test</div>
+      </div>
+      <div class="page-arrow">↗</div>
+    </a>
+    <a href="/admin" class="page-item">
+      <div class="page-item-left">
+        <div class="page-url">/admin</div>
+        <div class="page-desc-small">Admin panel — restricted</div>
+      </div>
+      <div class="page-arrow">↗</div>
+    </a>
+    <a href="/info" class="page-item">
+      <div class="page-item-left">
+        <div class="page-url">/info</div>
+        <div class="page-desc-small">You are here</div>
+      </div>
+      <div class="page-arrow">↗</div>
+    </a>
+  </div>
+
+  <div class="section-label">Tech Stack</div>
+  <div class="stack-grid">
+    <div class="stack-item">
+      <div class="stack-name">HTML / CSS / JS</div>
+      <div class="stack-role">Core — no frameworks</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-name">Supabase</div>
+      <div class="stack-role">Auth, database & realtime</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-name">GitHub Pages</div>
+      <div class="stack-role">Hosting & deployment</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-name">Cloudflare</div>
+      <div class="stack-role">DNS & domain</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-name">Web Audio API</div>
+      <div class="stack-role">EAS FSK encoding & decoding</div>
+    </div>
+    <div class="stack-item">
+      <div class="stack-name">NWS API</div>
+      <div class="stack-role">Live weather data</div>
+    </div>
+  </div>
+
+  <div class="section-label">Misc</div>
+  <div class="misc-grid">
+    <div class="misc-item">
+      <div class="misc-label">Site launched</div>
+      <div class="misc-value">2026</div>
+    </div>
+    <div class="misc-item">
+      <div class="misc-label">Total pages</div>
+      <div class="misc-value">9</div>
+    </div>
+    <div class="misc-item">
+      <div class="misc-label">Visitors</div>
+      <div class="misc-value" id="visitor-count">—</div>
+    </div>
+    <div class="misc-item">
+      <div class="misc-label">Changelog entries</div>
+      <div class="misc-value" id="changelog-count">—</div>
+    </div>
+    <div class="misc-item">
+      <div class="misc-label">EAS encoding standard</div>
+      <div class="misc-value">47 CFR §11.31</div>
+    </div>
+    <div class="misc-item">
+      <div class="misc-label">Hosted on</div>
+      <div class="misc-value">GitHub Pages</div>
+    </div>
+    <div class="misc-item">
+      <div class="misc-label">FSK baud rate</div>
+      <div class="misc-value">520.83 bps</div>
+    </div>
+    <div class="misc-item">
+      <div class="misc-label">Attention tone</div>
+      <div class="misc-value">853 Hz + 960 Hz</div>
+    </div>
+  </div>
+</main>
+
+<script>
+  var SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function loadStats() {
+    var visitors = await sb.from('visitors').select('count').single();
+    if (visitors.data) document.getElementById('visitor-count').textContent = visitors.data.count.toLocaleString();
+
+    var changelog = await sb.from('changelog').select('id', { count: 'exact', head: true });
+    if (changelog.count !== null) document.getElementById('changelog-count').textContent = changelog.count;
+  }
+
+  loadStats();
+</script>
+
+</body>
+</html>
