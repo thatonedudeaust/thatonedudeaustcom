@@ -1,1 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Excuse Generator — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0b; --bg2: #111113; --bg3: #18181c;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8; --text-muted: #6b6b72; --text-mid: #9a9aa3;
+      --accent: #c8f04a;
+      --font-display: 'Syne', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.4;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(10,10,11,0.85); backdrop-filter: blur(12px);
+    }
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+    .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+    main {
+      position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 4rem 3rem;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards; }
+    h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
+    .page-desc { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
 
+    .category-row {
+      display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 2rem; animation: fadeUp 0.5s ease forwards 0.3s; opacity: 0;
+    }
+
+    .cat-btn {
+      font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;
+      padding: 0.4rem 0.9rem; border-radius: 100px; cursor: pointer;
+      border: 1px solid var(--border-hover); background: transparent;
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .cat-btn:hover, .cat-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,240,74,0.06); }
+
+    .excuse-box {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 3rem 2.5rem; margin-bottom: 2rem; width: 100%;
+      animation: fadeUp 0.5s ease forwards 0.4s; opacity: 0; min-height: 140px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .excuse-text {
+      font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+      font-weight: 700; letter-spacing: -0.01em; line-height: 1.4;
+      transition: opacity 0.2s;
+    }
+
+    .btn-row { display: flex; gap: 0.75rem; animation: fadeUp 0.5s ease forwards 0.5s; opacity: 0; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; font-family: var(--font-mono);
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+      border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none;
+    }
+    .btn-primary { background: var(--accent); color: #0a0a0b; border: 1px solid var(--accent); }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-hover); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 768px) { nav { padding: 1rem 1.5rem; } main { padding: 2rem 1.5rem; } }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">thatonedudeaust.com</a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+<main>
+  <p class="page-eyebrow">Tool</p>
+  <h1>Excuse Generator</h1>
+  <p class="page-desc">Need an excuse? We got you. Click generate and pray.</p>
+
+  <div class="category-row">
+    <button class="cat-btn active" onclick="setCategory('all', this)">All</button>
+    <button class="cat-btn" onclick="setCategory('late', this)">Being Late</button>
+    <button class="cat-btn" onclick="setCategory('work', this)">Work / School</button>
+    <button class="cat-btn" onclick="setCategory('social', this)">Social</button>
+    <button class="cat-btn" onclick="setCategory('wild', this)">Wild</button>
+  </div>
+
+  <div class="excuse-box">
+    <div class="excuse-text" id="excuse-text">Hit generate for your excuse.</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-primary" onclick="generateExcuse()">Generate →</button>
+    <button class="btn btn-ghost" onclick="copyExcuse()">Copy</button>
+  </div>
+</main>
+<script>
+  var EXCUSES = {
+    late: [
+      "My alarm went off but it sounded so calm I assumed everything was fine.",
+      "There was a goose blocking the road and I didn't want to escalate the situation.",
+      "I got here as fast as I could once I realized I was supposed to be here.",
+      "My GPS took me on a scenic route I didn't ask for.",
+      "I was on time, just not for this.",
+      "Traffic was bad in my head.",
+      "I left early but then went back inside three times.",
+      "My car needed a moment and honestly so did I.",
+      "I was technically on my way for the last two hours.",
+      "The universe was not cooperating this morning.",
+    ],
+    work: [
+      "I finished it but saved it to a folder I can't find.",
+      "My computer updated at the worst possible time.",
+      "I sent it to you — check your spam, promotions, trash, and archives.",
+      "I was about to do it and then something urgent came up that I can't describe.",
+      "I did the hard part. The easy part just needs a little more time.",
+      "I misread the deadline as a suggestion.",
+      "I was waiting for more information that never arrived.",
+      "I delegated it mentally and forgot to tell anyone.",
+      "My notes app crashed and took all my progress with it.",
+      "I've been heads down on a different version of this task.",
+    ],
+    social: [
+      "I was going to come but I got too comfortable sitting down.",
+      "I had every intention of being there until I didn't.",
+      "Something came up that I can't really explain right now.",
+      "I was there in spirit the entire time.",
+      "I forgot what day it was for about 48 hours.",
+      "I thought it started an hour later than it did.",
+      "My phone died and I couldn't find the address.",
+      "I was on my way and then turned around for reasons.",
+      "I replied to the invite but apparently to myself.",
+      "I had a really important thing that I am not able to name.",
+    ],
+    wild: [
+      "A squirrel made eye contact with me and I got distracted.",
+      "I was abducted briefly but I'm fine now.",
+      "My horoscope said today was not the day and I agreed.",
+      "I was in a staring contest with my ceiling fan and lost track of time.",
+      "Mercury is in retrograde and I refuse to make decisions right now.",
+      "I was watching a video about how time zones work and lost all sense of time.",
+      "I accidentally walked into a store and couldn't leave without buying something.",
+      "I saw a cloud that looked exactly like my ex and had to process that.",
+      "A cat followed me for three blocks and I couldn't just leave it.",
+      "I found a dollar and spent 45 minutes deciding what to do with it.",
+    ]
+  };
+
+  var currentCategory = 'all';
+  var lastIdx = -1;
+
+  function setCategory(cat, btn) {
+    currentCategory = cat;
+    document.querySelectorAll('.cat-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+    generateExcuse();
+  }
+
+  function getPool() {
+    if (currentCategory === 'all') {
+      return Object.values(EXCUSES).flat();
+    }
+    return EXCUSES[currentCategory] || [];
+  }
+
+  function generateExcuse() {
+    var pool = getPool();
+    var idx;
+    do { idx = Math.floor(Math.random() * pool.length); } while (idx === lastIdx && pool.length > 1);
+    lastIdx = idx;
+    var el = document.getElementById('excuse-text');
+    el.style.opacity = '0';
+    setTimeout(function() {
+      el.textContent = pool[idx];
+      el.style.transition = 'opacity 0.3s';
+      el.style.opacity = '1';
+    }, 150);
+  }
+
+  function copyExcuse() {
+    var text = document.getElementById('excuse-text').textContent;
+    navigator.clipboard.writeText(text);
+  }
+
+  generateExcuse();
+</script>
+</body>
+</html>
