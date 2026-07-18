@@ -1,1 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>QR Generator — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0b; --bg2: #111113; --bg3: #18181c;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8; --text-muted: #6b6b72; --text-mid: #9a9aa3;
+      --accent: #c8f04a; --red: #ff5c5c;
+      --font-display: 'Syne', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.4;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(10,10,11,0.85); backdrop-filter: blur(12px);
+    }
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+    .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+    main { position: relative; z-index: 1; max-width: 600px; margin: 0 auto; padding: 4rem 3rem; }
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards; }
+    h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
+    .page-desc { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
+    .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; animation: fadeUp 0.5s ease forwards 0.3s; opacity: 0; }
+    .field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+    label { font-family: var(--font-mono); font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+    input, textarea {
+      background: var(--bg3); border: 1px solid var(--border); border-radius: 4px;
+      padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.85rem;
+      color: var(--text); outline: none; transition: border-color 0.2s; width: 100%;
+    }
+    input:focus, textarea:focus { border-color: var(--accent); }
+    textarea { resize: vertical; min-height: 80px; }
+    .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1.25rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.75rem 1.5rem; font-family: var(--font-mono);
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+      border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none;
+    }
+    .btn-primary { background: var(--accent); color: #0a0a0b; border: 1px solid var(--accent); }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-hover); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .qr-output {
+      display: none; margin-top: 2rem;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 8px; padding: 2rem;
+      flex-direction: column; align-items: center; gap: 1.25rem;
+    }
+    .qr-output.visible { display: flex; animation: fadeUp 0.4s ease forwards; }
+    #qr-canvas { background: white; padding: 12px; border-radius: 6px; }
+    .qr-label { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); text-align: center; max-width: 300px; word-break: break-all; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 768px) { nav { padding: 1rem 1.5rem; } main { padding: 2rem 1.5rem; } }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">thatonedudeaust.com</a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+<main>
+  <p class="page-eyebrow">Tool</p>
+  <h1>QR Generator</h1>
+  <p class="page-desc">Enter any URL or text and get an instant QR code.</p>
+  <div class="card">
+    <div class="field">
+      <label>URL or Text</label>
+      <textarea id="qr-input" placeholder="https://thatonedudeaust.com"></textarea>
+    </div>
+    <div class="field">
+      <label>Size</label>
+      <input type="range" id="qr-size" min="128" max="512" value="256" style="accent-color:var(--accent)" />
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="generateQR()">Generate →</button>
+      <button class="btn btn-ghost" id="dl-btn" onclick="downloadQR()" style="display:none">⬇ Download</button>
+    </div>
+    <div class="qr-output" id="qr-output">
+      <div id="qr-canvas"></div>
+      <div class="qr-label" id="qr-label"></div>
+    </div>
+  </div>
+</main>
+<script>
+  var qrInstance = null;
 
+  function generateQR() {
+    var text = document.getElementById('qr-input').value.trim();
+    if (!text) return;
+    var size = parseInt(document.getElementById('qr-size').value);
+    var container = document.getElementById('qr-canvas');
+    container.innerHTML = '';
+    qrInstance = new QRCode(container, {
+      text: text, width: size, height: size,
+      colorDark: '#000000', colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    document.getElementById('qr-label').textContent = text;
+    document.getElementById('qr-output').classList.add('visible');
+    document.getElementById('dl-btn').style.display = 'inline-flex';
+  }
+
+  function downloadQR() {
+    var canvas = document.querySelector('#qr-canvas canvas');
+    if (!canvas) return;
+    var a = document.createElement('a');
+    a.href = canvas.toDataURL('image/png');
+    a.download = 'qrcode.png';
+    a.click();
+  }
+
+  document.getElementById('qr-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generateQR(); }
+  });
+</script>
+</body>
+</html>
