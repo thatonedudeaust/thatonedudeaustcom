@@ -1,1 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dice & Coin — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0b; --bg2: #111113; --bg3: #18181c;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8; --text-muted: #6b6b72; --text-mid: #9a9aa3;
+      --accent: #c8f04a;
+      --font-display: 'Syne', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.4;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(10,10,11,0.85); backdrop-filter: blur(12px);
+    }
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+    .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+    main { position: relative; z-index: 1; max-width: 700px; margin: 0 auto; padding: 4rem 3rem; }
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards; }
+    h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
+    .page-desc { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
 
+    .section-label {
+      font-family: var(--font-mono); font-size: 0.68rem; color: var(--accent);
+      letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .section-label::after { content: ''; flex: 1; max-width: 60px; height: 1px; background: var(--border-hover); }
+
+    /* COIN */
+    .coin-section { margin-bottom: 2.5rem; animation: fadeUp 0.5s ease forwards 0.3s; opacity: 0; }
+    .coin-card {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 2.5rem; display: flex; flex-direction: column; align-items: center; gap: 1.5rem;
+    }
+    .coin {
+      width: 100px; height: 100px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; border: 3px solid var(--border-hover);
+      background: var(--bg3); transition: all 0.3s;
+      cursor: pointer; user-select: none;
+    }
+    .coin.flipping { animation: coinFlip 0.4s ease; }
+    .coin.heads { border-color: var(--accent); box-shadow: 0 0 20px rgba(200,240,74,0.2); }
+    .coin.tails { border-color: #5cb8ff; box-shadow: 0 0 20px rgba(92,184,255,0.2); }
+    .coin-result { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-muted); }
+    .coin-result span { color: var(--accent); font-weight: 600; }
+
+    /* DICE */
+    .dice-section { margin-bottom: 2.5rem; animation: fadeUp 0.5s ease forwards 0.4s; opacity: 0; }
+    .dice-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 2rem; }
+
+    .dice-type-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .dice-btn {
+      font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.06em;
+      padding: 0.4rem 0.9rem; border-radius: 100px; cursor: pointer;
+      border: 1px solid var(--border-hover); background: transparent;
+      color: var(--text-muted); transition: all 0.2s;
+    }
+    .dice-btn:hover, .dice-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(200,240,74,0.06); }
+
+    .dice-count-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+    .dice-count-row label { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+    .dice-count-row input { accent-color: var(--accent); flex: 1; }
+    .dice-count-val { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); min-width: 2rem; text-align: right; }
+
+    .dice-results {
+      display: flex; flex-wrap: wrap; gap: 0.75rem; min-height: 3rem;
+      margin-bottom: 1rem; align-items: center;
+    }
+    .die-face {
+      width: 48px; height: 48px; background: var(--bg3);
+      border: 1px solid var(--border-hover); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; font-weight: 800; color: var(--accent);
+      font-family: var(--font-mono); transition: all 0.2s;
+    }
+    .die-face.rolling { animation: dieRoll 0.3s ease; }
+
+    .dice-total {
+      font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);
+    }
+    .dice-total span { color: var(--accent); font-weight: 600; font-size: 1rem; }
+
+    /* HISTORY */
+    .history-section { animation: fadeUp 0.5s ease forwards 0.5s; opacity: 0; }
+    .history-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
+    .history-list { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); line-height: 2; max-height: 160px; overflow-y: auto; }
+    .history-entry { display: flex; gap: 0.75rem; }
+    .history-time { color: var(--accent); flex-shrink: 0; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.4rem; font-family: var(--font-mono);
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+      border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none;
+    }
+    .btn-primary { background: var(--accent); color: #0a0a0b; border: 1px solid var(--accent); }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-hover); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes coinFlip { 0%{transform:rotateY(0)} 50%{transform:rotateY(90deg) scale(1.1)} 100%{transform:rotateY(0)} }
+    @keyframes dieRoll { 0%{transform:rotate(0)} 33%{transform:rotate(-15deg) scale(1.1)} 66%{transform:rotate(15deg)} 100%{transform:rotate(0) scale(1)} }
+    @media (max-width: 768px) { nav { padding: 1rem 1.5rem; } main { padding: 2rem 1.5rem; } }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">thatonedudeaust.com</a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+<main>
+  <p class="page-eyebrow">Tool</p>
+  <h1>Dice & Coin</h1>
+  <p class="page-desc">Flip a coin or roll some dice. That's it.</p>
+
+  <!-- COIN -->
+  <div class="coin-section">
+    <div class="section-label">Coin Flip</div>
+    <div class="coin-card">
+      <div class="coin" id="coin" onclick="flipCoin()">🪙</div>
+      <div class="coin-result" id="coin-result">Click the coin to flip</div>
+    </div>
+  </div>
+
+  <!-- DICE -->
+  <div class="dice-section">
+    <div class="section-label">Dice Roller</div>
+    <div class="dice-card">
+      <div class="dice-type-row">
+        <button class="dice-btn active" onclick="setDie(4, this)">D4</button>
+        <button class="dice-btn active" onclick="setDie(6, this)">D6</button>
+        <button class="dice-btn" onclick="setDie(8, this)">D8</button>
+        <button class="dice-btn" onclick="setDie(10, this)">D10</button>
+        <button class="dice-btn" onclick="setDie(12, this)">D12</button>
+        <button class="dice-btn" onclick="setDie(20, this)">D20</button>
+        <button class="dice-btn" onclick="setDie(100, this)">D100</button>
+      </div>
+      <div class="dice-count-row">
+        <label>Number of dice</label>
+        <input type="range" id="dice-count" min="1" max="10" value="1" oninput="document.getElementById('dice-count-val').textContent = this.value" />
+        <div class="dice-count-val" id="dice-count-val">1</div>
+      </div>
+      <div class="dice-results" id="dice-results">
+        <span style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-muted)">Hit roll to see results</span>
+      </div>
+      <div class="dice-total" id="dice-total" style="margin-bottom:1rem"></div>
+      <button class="btn btn-primary" onclick="rollDice()">Roll →</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="history-section">
+    <div class="section-label">Roll History</div>
+    <div class="history-card">
+      <div class="history-list" id="history-list">
+        <div style="color:var(--text-muted)">Nothing rolled yet.</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  var currentDie = 6;
+  var coinFlips = 0;
+  var historyEntries = [];
+
+  // Default select D6
+  document.querySelector('.dice-btn').classList.remove('active');
+  document.querySelectorAll('.dice-btn')[1].classList.add('active');
+
+  function setDie(sides, btn) {
+    currentDie = sides;
+    document.querySelectorAll('.dice-btn').forEach(function(b) { b.classList.remove('active'); });
+    btn.classList.add('active');
+  }
+
+  function flipCoin() {
+    var coin = document.getElementById('coin');
+    var result = document.getElementById('coin-result');
+    coin.className = 'coin flipping';
+
+    setTimeout(function() {
+      var isHeads = Math.random() < 0.5;
+      coin.textContent = isHeads ? '👑' : '⚡';
+      coin.className = 'coin ' + (isHeads ? 'heads' : 'tails');
+      var word = isHeads ? 'Heads' : 'Tails';
+      result.innerHTML = '<span>' + word + '</span> — flip #' + (++coinFlips);
+      addHistory('🪙 Coin: ' + word);
+    }, 400);
+  }
+
+  function rollDice() {
+    var count = parseInt(document.getElementById('dice-count').value);
+    var resultsEl = document.getElementById('dice-results');
+    var totalEl = document.getElementById('dice-total');
+    resultsEl.innerHTML = '';
+
+    var rolls = [];
+    for (var i = 0; i < count; i++) {
+      rolls.push(Math.floor(Math.random() * currentDie) + 1);
+    }
+
+    rolls.forEach(function(roll, i) {
+      var die = document.createElement('div');
+      die.className = 'die-face rolling';
+      die.textContent = roll;
+      if (roll === currentDie) { die.style.color = 'var(--accent)'; die.style.borderColor = 'var(--accent)'; }
+      if (roll === 1) { die.style.color = 'var(--red, #ff5c5c)'; die.style.borderColor = 'var(--red, #ff5c5c)'; }
+      resultsEl.appendChild(die);
+      setTimeout(function() { die.classList.remove('rolling'); }, 300);
+    });
+
+    var total = rolls.reduce(function(a, b) { return a + b; }, 0);
+    if (count > 1) {
+      totalEl.innerHTML = 'Total: <span>' + total + '</span> (' + count + 'd' + currentDie + ')';
+    } else {
+      totalEl.innerHTML = '';
+    }
+
+    addHistory('🎲 ' + count + 'd' + currentDie + ': [' + rolls.join(', ') + ']' + (count > 1 ? ' = ' + total : ''));
+  }
+
+  function addHistory(text) {
+    var now = new Date();
+    var time = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0') + ':' + String(now.getSeconds()).padStart(2,'0');
+    historyEntries.unshift({ time: time, text: text });
+    if (historyEntries.length > 20) historyEntries.pop();
+
+    var list = document.getElementById('history-list');
+    list.innerHTML = historyEntries.map(function(e) {
+      return '<div class="history-entry"><span class="history-time">[' + e.time + ']</span><span>' + e.text + '</span></div>';
+    }).join('');
+  }
+</script>
+</body>
+</html>
