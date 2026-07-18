@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Articles — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0b; --bg2: #111113; --bg3: #18181c;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8; --text-muted: #6b6b72; --text-mid: #9a9aa3;
+      --accent: #c8f04a; --red: #ff5c5c;
+      --font-display: 'Syne', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.4;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(10,10,11,0.85); backdrop-filter: blur(12px);
+    }
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+    .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+
+    main { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 4rem 3rem; }
+
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards; }
+    h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
+    .page-desc { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
+
+    /* HEADLINES GRID */
+    #headlines-view { animation: fadeUp 0.5s ease forwards 0.3s; opacity: 0; }
+
+    .disclaimer {
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);
+      background: var(--bg2); border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px; padding: 0.75rem 1rem; margin-bottom: 2rem;
+    }
+
+    .headlines-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
+      background: var(--border); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem;
+    }
+
+    .headline-card {
+      background: var(--bg2); padding: 1.75rem;
+      cursor: pointer; transition: background 0.2s;
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .headline-card::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+      width: 3px; background: var(--accent);
+      transform: scaleY(0); transition: transform 0.2s; transform-origin: bottom;
+    }
+    .headline-card:hover { background: var(--bg3); }
+    .headline-card:hover::before { transform: scaleY(1); }
+
+    .headline-category {
+      font-family: var(--font-mono); font-size: 0.68rem; color: var(--accent);
+      letter-spacing: 0.1em; text-transform: uppercase;
+    }
+
+    .headline-title {
+      font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em;
+      line-height: 1.35; color: var(--text);
+    }
+
+    .headline-meta {
+      font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);
+      display: flex; gap: 1rem;
+    }
+
+    .headline-card.loading .headline-title {
+      background: var(--bg3); color: transparent; border-radius: 3px;
+      animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    @keyframes shimmer {
+      0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; }
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.4rem; font-family: var(--font-mono);
+      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+      border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none;
+    }
+    .btn-primary { background: var(--accent); color: #0a0a0b; border: 1px solid var(--accent); }
+    .btn-primary:hover { background: transparent; color: var(--accent); }
+    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-hover); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ARTICLE VIEW */
+    #article-view { display: none; }
+    #article-view.visible { display: block; animation: fadeUp 0.4s ease forwards; }
+
+    .article-back {
+      font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);
+      cursor: pointer; margin-bottom: 2rem; display: inline-flex;
+      align-items: center; gap: 0.5rem; transition: color 0.2s; background: none; border: none;
+    }
+    .article-back:hover { color: var(--accent); }
+
+    .article-category {
+      font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent);
+      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem;
+    }
+
+    .article-title {
+      font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800;
+      letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1.5rem;
+    }
+
+    .article-meta {
+      font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);
+      display: flex; gap: 1.5rem; margin-bottom: 2rem;
+      padding-bottom: 1.5rem; border-bottom: 1px solid var(--border);
+    }
+
+    .article-body {
+      font-size: 1rem; line-height: 1.85; color: var(--text-mid); max-width: 680px;
+    }
+
+    .article-body p { margin-bottom: 1.25rem; }
+
+    .article-loading {
+      display: flex; flex-direction: column; gap: 0.75rem; max-width: 680px;
+    }
+
+    .skeleton {
+      background: var(--bg2); border-radius: 3px; height: 1rem;
+      animation: shimmer 1.5s ease-in-out infinite;
+    }
+
+    .skeleton.title { height: 2.5rem; margin-bottom: 0.5rem; }
+    .skeleton.wide { width: 100%; }
+    .skeleton.mid { width: 75%; }
+    .skeleton.short { width: 50%; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      main { padding: 2rem 1.5rem; }
+      .headlines-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">thatonedudeaust.com</a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+<main>
+  <p class="page-eyebrow">Fake Tech News</p>
+  <h1>Articles</h1>
+  <p class="page-desc">AI-generated fake tech headlines and articles. None of this is real. Refresh for new ones.</p>
+
+  <!-- HEADLINES VIEW -->
+  <div id="headlines-view">
+    <div class="disclaimer">⚠️ All articles on this page are entirely fictional and AI-generated for entertainment purposes. Nothing here is real news.</div>
+    <div class="headlines-grid" id="headlines-grid">
+      <!-- filled by JS -->
+    </div>
+    <button class="btn btn-ghost" onclick="loadHeadlines()">↻ Generate new headlines</button>
+  </div>
+
+  <!-- ARTICLE VIEW -->
+  <div id="article-view">
+    <button class="article-back" onclick="showHeadlines()">← Back to headlines</button>
+    <div id="article-content"></div>
+  </div>
+</main>
+
+<script>
+var CATEGORIES = [
+  'Tech', 'AI', 'Startups', 'Security', 'Dev', 'Hardware', 'Web', 'Science'
+];
+
+var currentHeadlines = [];
+
+function randomCategory() {
+  return CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
+}
+
+function randomDate() {
+  var hours = Math.floor(Math.random() * 12) + 1;
+  return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+}
+
+function randomReadTime() {
+  return (Math.floor(Math.random() * 6) + 2) + ' min read';
+}
+
+async function generateHeadlines() {
+  var response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 1000,
+      messages: [{
+        role: 'user',
+        content: 'Generate 8 fake but believable tech news headlines. They should sound like real Hacker News or TechCrunch headlines but be completely made up and satirical. Mix topics: AI, startups, programming, security, hardware, web dev. Return ONLY a JSON array of 8 strings, no other text, no markdown, no explanation. Example format: ["Headline one", "Headline two"]'
+      }]
+    })
+  });
+  var data = await response.json();
+  var text = data.content[0].text.trim();
+  // Strip any markdown fences just in case
+  text = text.replace(/```json|```/g, '').trim();
+  return JSON.parse(text);
+}
+
+async function loadHeadlines() {
+  var grid = document.getElementById('headlines-grid');
+
+  // Show loading skeletons
+  grid.innerHTML = Array(8).fill(0).map(function(_, i) {
+    return '<div class="headline-card loading">' +
+      '<div class="headline-category">' + CATEGORIES[i % CATEGORIES.length] + '</div>' +
+      '<div class="headline-title">Generating headline...</div>' +
+      '<div class="headline-meta"><span>loading...</span></div>' +
+    '</div>';
+  }).join('');
+
+  try {
+    var headlines = await generateHeadlines();
+    currentHeadlines = headlines;
+    grid.innerHTML = headlines.map(function(title, i) {
+      var cat = randomCategory();
+      var date = randomDate();
+      var read = randomReadTime();
+      return '<div class="headline-card" onclick="loadArticle(' + i + ', \'' + cat + '\')">' +
+        '<div class="headline-category">' + cat + '</div>' +
+        '<div class="headline-title">' + escapeHtml(title) + '</div>' +
+        '<div class="headline-meta"><span>' + date + '</span><span>' + read + '</span></div>' +
+      '</div>';
+    }).join('');
+  } catch(e) {
+    grid.innerHTML = '<div class="headline-card" style="grid-column:1/-1;cursor:default">' +
+      '<div class="headline-title" style="color:var(--red)">Failed to generate headlines. Try again.</div>' +
+    '</div>';
+  }
+}
+
+async function loadArticle(idx, category) {
+  var title = currentHeadlines[idx];
+  document.getElementById('headlines-view').style.display = 'none';
+  var articleView = document.getElementById('article-view');
+  articleView.classList.add('visible');
+
+  var content = document.getElementById('article-content');
+  content.innerHTML =
+    '<div class="article-category">' + category + '</div>' +
+    '<div class="article-title">' + escapeHtml(title) + '</div>' +
+    '<div class="article-meta">' +
+      '<span>Staff Writer</span>' +
+      '<span>' + randomDate() + '</span>' +
+      '<span>' + randomReadTime() + '</span>' +
+    '</div>' +
+    '<div class="article-loading">' +
+      '<div class="skeleton wide"></div>' +
+      '<div class="skeleton wide"></div>' +
+      '<div class="skeleton mid"></div>' +
+      '<div class="skeleton wide"></div>' +
+      '<div class="skeleton wide"></div>' +
+      '<div class="skeleton short"></div>' +
+    '</div>';
+
+  try {
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: 'Write a fake but entertaining tech news article for this headline: "' + title + '". Write it in the style of a tech blog — informative sounding but subtly absurd and satirical. 4-5 paragraphs. Do NOT include a headline or title at the top, just the body paragraphs. No markdown formatting, just plain paragraphs separated by newlines. Keep it fun and slightly ridiculous but readable.'
+        }]
+      })
+    });
+    var data = await response.json();
+    var articleText = data.content[0].text.trim();
+    var paragraphs = articleText.split('\n').filter(function(p) { return p.trim().length > 0; });
+
+    content.innerHTML =
+      '<div class="article-category">' + category + '</div>' +
+      '<div class="article-title">' + escapeHtml(title) + '</div>' +
+      '<div class="article-meta">' +
+        '<span>Staff Writer</span>' +
+        '<span>' + randomDate() + '</span>' +
+        '<span>' + randomReadTime() + '</span>' +
+      '</div>' +
+      '<div class="article-body">' +
+        paragraphs.map(function(p) { return '<p>' + escapeHtml(p.trim()) + '</p>'; }).join('') +
+      '</div>';
+  } catch(e) {
+    content.querySelector('.article-loading').innerHTML = '<p style="color:var(--red)">Failed to generate article. Go back and try again.</p>';
+  }
+}
+
+function showHeadlines() {
+  document.getElementById('article-view').classList.remove('visible');
+  document.getElementById('article-view').style.display = '';
+  document.getElementById('headlines-view').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function escapeHtml(text) {
+  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadHeadlines();
+</script>
+</body>
+</html>
