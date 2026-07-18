@@ -8,17 +8,10 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --green: #00ff41;
-      --green-dim: #00aa2a;
-      --green-dark: #003b0f;
-      --bg: #0a0a0a;
-    }
-
     html, body {
       height: 100%;
-      background: var(--bg);
-      color: var(--green);
+      background: #0a0a0a;
+      color: #00ff41;
       font-family: 'Courier New', Courier, monospace;
       font-size: 14px;
       line-height: 1.6;
@@ -37,19 +30,18 @@
       overflow-y: auto;
       padding-bottom: 0.5rem;
       scrollbar-width: thin;
-      scrollbar-color: var(--green-dim) transparent;
+      scrollbar-color: #00aa2a transparent;
     }
 
     #output::-webkit-scrollbar { width: 4px; }
-    #output::-webkit-scrollbar-thumb { background: var(--green-dim); }
+    #output::-webkit-scrollbar-thumb { background: #00aa2a; }
 
-    .line { margin-bottom: 0.1rem; word-break: break-word; white-space: pre-wrap; }
-    .line.cmd { color: var(--green); }
-    .line.out { color: var(--green-dim); }
-    .line.err { color: #ff4444; }
-    .line.accent { color: var(--green); font-weight: bold; }
-    .line.dim { color: #006614; }
-    .line.blank { min-height: 1rem; }
+    .line { margin-bottom: 0; word-break: break-word; white-space: pre-wrap; }
+    .cmd    { color: #00ff41; }
+    .out    { color: #00aa2a; }
+    .err    { color: #ff4444; }
+    .bright { color: #00ff41; font-weight: bold; }
+    .dim    { color: #005514; }
 
     .prompt-row {
       display: flex;
@@ -59,50 +51,32 @@
       flex-shrink: 0;
     }
 
-    .prompt { color: var(--green); white-space: nowrap; user-select: none; }
+    .prompt { color: #00ff41; white-space: nowrap; user-select: none; }
 
     #input {
       background: transparent;
       border: none;
       outline: none;
-      color: var(--green);
+      color: #00ff41;
       font-family: 'Courier New', Courier, monospace;
       font-size: 14px;
       flex: 1;
-      caret-color: var(--green);
+      caret-color: #00ff41;
     }
 
-    .cursor {
-      display: inline-block;
-      width: 8px;
-      height: 1em;
-      background: var(--green);
-      vertical-align: text-bottom;
-      animation: blink 1s step-end infinite;
-    }
-
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-    /* Scanline effect */
     body::after {
       content: '';
       position: fixed;
       inset: 0;
       background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.03) 2px,
-        rgba(0,0,0,0.03) 4px
+        0deg, transparent, transparent 2px,
+        rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px
       );
       pointer-events: none;
       z-index: 999;
     }
 
-    /* Glow */
-    #terminal { text-shadow: 0 0 8px rgba(0,255,65,0.4); }
-
-    .ascii { color: var(--green); line-height: 1.2; }
+    #terminal { text-shadow: 0 0 8px rgba(0,255,65,0.35); }
   </style>
 </head>
 <body>
@@ -117,189 +91,179 @@
 <script>
 var output = document.getElementById('output');
 var input = document.getElementById('input');
-var history = [];
+var cmdHistory = [];
 var historyIdx = -1;
 
 var BOOT = [
-  '                                                    ',
-  ' ████████╗██╗  ██╗ █████╗ ████████╗ ██████╗ ███╗  ',
-  '    ██╔══╝██║  ██║██╔══██╗╚══██╔══╝██╔═══╝ ████╗ ',
-  '    ██║   ███████║███████║   ██║   ██║  ██╗ ██╔██╗',
-  '    ██║   ██╔══██║██╔══██║   ██║   ██║  ╚═╝ ██║╚██',
-  '    ██║   ██║  ██║██║  ██║   ██║   ╚██████╗ ██║  █',
-  '    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝   ',
-  '                                                    ',
-  ' thatonedudeaust.com terminal v1.0.0               ',
-  ' type "help" for available commands                 ',
-  '                                                    ',
+  ' _                      _             _ ',
+  '| |                    (_)           | |',
+  '| |_ ___ _ __ _ __ ___  _ _ __   __ _| |',
+  '| __/ _ \ '__| '_ ` _ \| | '_ \ / _` | |',
+  '| ||  __/ |  | | | | | | | | | | (_| | |',
+  ' \__\___|_|  |_| |_| |_|_|_| |_|\__,_|_|',
+  '',
+  '  thatonedudeaust.com terminal v1.0.0',
+  '  type "help" for available commands',
+  '',
 ];
+
+function print(text, cls) {
+  var div = document.createElement('div');
+  div.className = 'line ' + (cls || 'out');
+  div.textContent = text;
+  output.appendChild(div);
+  output.scrollTop = output.scrollHeight;
+}
+
+function printBlank() { print('', 'out'); }
+
+function printCmd(cmd) {
+  print('aust@thatonedudeaust.com:~$ ' + cmd, 'cmd');
+}
 
 var COMMANDS = {
   help: function() {
-    return [
-      ['accent', '  AVAILABLE COMMANDS'],
-      ['dim',    '  ─────────────────────────────────────'],
-      ['out',    '  about          — who is aust'],
-      ['out',    '  projects       — current projects'],
-      ['out',    '  eas            — EAS encoder info'],
-      ['out',    '  weather        — weather info & NWS'],
-      ['out',    '  skills         — tech skills'],
-      ['out',    '  links          — social links'],
-      ['out',    '  changelog      — view site changelog'],
-      ['out',    '  whoami         — you, apparently'],
-      ['out',    '  date           — current date/time'],
-      ['out',    '  clear          — clear the terminal'],
-      ['out',    '  matrix         — do you feel it'],
-      ['out',    '  hack           — i am in'],
-      ['out',    '  sudo rm -rf /  — don\'t'],
-      ['out',    '  coffee         — important'],
-      ['out',    '  coinflip       — fate decider'],
-      ['out',    '  roll [sides]   — roll a die'],
-      ['out',    '  rickroll       — you will regret this'],
-      ['out',    '  screams        — into the void'],
-      ['out',    '  uwu            — ...'],
-      ['out',    '  ls             — list site pages'],
-      ['out',    '  uptime         — how long has site been up'],
-      ['out',    '  ping           — ping the site'],
-      ['out',    '  exit           — you can\'t leave'],
-      ['blank',  ''],
+    print('  AVAILABLE COMMANDS', 'bright');
+    print('  ----------------------------------------', 'dim');
+    var cmds = [
+      ['about',         'who is aust'],
+      ['projects',      'current projects'],
+      ['eas',           'EAS encoder info'],
+      ['weather',       'weather & NWS info'],
+      ['skills',        'tech skills'],
+      ['links',         'social links'],
+      ['ls',            'list site pages'],
+      ['whoami',        'you, apparently'],
+      ['date',          'current date & time'],
+      ['uptime',        'how long the site has been up'],
+      ['ping',          'ping the site'],
+      ['changelog',     'view site changelog'],
+      ['clear',         'clear the terminal'],
+      ['matrix',        'do you feel it'],
+      ['hack',          'i am in'],
+      ['sudo rm -rf /', 'don\'t'],
+      ['coffee',        'important'],
+      ['coinflip',      'fate decider'],
+      ['roll [sides]',  'roll a die'],
+      ['rickroll',      'you will regret this'],
+      ['screams',       'into the void'],
+      ['uwu',           '...'],
+      ['exit',          'you can\'t leave'],
     ];
+    cmds.forEach(function(c) {
+      var padded = ('  ' + c[0]).padEnd(22, ' ');
+      print(padded + '— ' + c[1], 'out');
+    });
+    printBlank();
   },
 
   about: function() {
-    return [
-      ['accent', '  ABOUT AUST'],
-      ['dim',    '  ─────────────────────────────────────'],
-      ['out',    '  Developer from New Jersey.'],
-      ['out',    '  Lead Developer at RAGE Alerting Systems.'],
-      ['out',    '  Builds web apps, Roblox experiences,'],
-      ['out',    '  and EAS simulation tools.'],
-      ['out',    '  Deep interest in weather radio,'],
-      ['out',    '  emergency alerting systems, and electronics.'],
-      ['blank',  ''],
-    ];
+    print('  ABOUT AUST', 'bright');
+    print('  ----------------------------------------', 'dim');
+    print('  Developer from New Jersey.', 'out');
+    print('  Lead Developer at RAGE Alerting Systems.', 'out');
+    print('  Builds web apps, Roblox experiences,', 'out');
+    print('  and EAS simulation tools.', 'out');
+    print('  Deep interest in weather radio,', 'out');
+    print('  emergency alerting systems, and electronics.', 'out');
+    printBlank();
   },
 
   projects: function() {
-    return [
-      ['accent', '  PROJECTS'],
-      ['dim',    '  ─────────────────────────────────────'],
-      ['out',    '  [1] RAGE Alerting Systems'],
-      ['out',    '      Lead Developer — Roblox EAS simulation'],
-      ['out',    ''],
-      ['out',    '  [2] NOAA Weather Radio Web App'],
-      ['out',    '      Live NWS data + DECtalk TTS'],
-      ['out',    '      → thatonedudeaust.github.io/weather-radio'],
-      ['out',    ''],
-      ['out',    '  [3] EAS Encoder / Decoder'],
-      ['out',    '      Real FSK SAME encoding per 47 CFR §11.31'],
-      ['out',    '      → thatonedudeaust.com/eas'],
-      ['out',    '      → thatonedudeaust.com/decoder'],
-      ['blank',  ''],
-    ];
+    print('  PROJECTS', 'bright');
+    print('  ----------------------------------------', 'dim');
+    print('  [1] RAGE Alerting Systems', 'out');
+    print('      Lead Developer — Roblox EAS simulation', 'out');
+    print('', 'out');
+    print('  [2] NOAA Weather Radio Web App', 'out');
+    print('      Live NWS data + DECtalk TTS', 'out');
+    print('      thatonedudeaust.github.io/weather-radio', 'out');
+    print('', 'out');
+    print('  [3] EAS Encoder / Decoder', 'out');
+    print('      Real FSK SAME encoding per 47 CFR 11.31', 'out');
+    print('      thatonedudeaust.com/eas', 'out');
+    print('      thatonedudeaust.com/decoder', 'out');
+    printBlank();
   },
 
   eas: function() {
-    return [
-      ['accent', '  EMERGENCY ALERT SYSTEM'],
-      ['dim',    '  ─────────────────────────────────────'],
-      ['out',    '  SAME encoding standard: 47 CFR §11.31'],
-      ['out',    '  Baud rate:    520.83 bps'],
-      ['out',    '  Mark freq:    2083.3 Hz'],
-      ['out',    '  Space freq:   1562.5 Hz'],
-      ['out',    '  Preamble:     0xAB × 16'],
-      ['out',    '  Attn tone:    853 Hz + 960 Hz'],
-      ['out',    '  EOM:          NNNN × 3'],
-      ['out',    ''],
-      ['out',    '  Try it: thatonedudeaust.com/eas'],
-      ['out',    '  Decode: thatonedudeaust.com/decoder'],
-      ['blank',  ''],
-    ];
+    print('  EMERGENCY ALERT SYSTEM', 'bright');
+    print('  ----------------------------------------', 'dim');
+    print('  Standard:    47 CFR 11.31', 'out');
+    print('  Baud rate:   520.83 bps', 'out');
+    print('  Mark freq:   2083.3 Hz', 'out');
+    print('  Space freq:  1562.5 Hz', 'out');
+    print('  Preamble:    0xAB x 16', 'out');
+    print('  Attn tone:   853 Hz + 960 Hz', 'out');
+    print('  EOM:         NNNN x 3', 'out');
+    print('', 'out');
+    print('  Try it: thatonedudeaust.com/eas', 'out');
+    print('  Decode: thatonedudeaust.com/decoder', 'out');
+    printBlank();
   },
 
   weather: function() {
-    return [
-      ['accent', '  WEATHER & NWS'],
-      ['dim',    '  ─────────────────────────────────────'],
-      ['out',    '  NWS Office:    Mount Holly, NJ (KIH28)'],
-      ['out',    '  Coverage:      South Jersey'],
-      ['out',    '  Counties:      Burlington, Camden,'],
-      ['out',    '                 Gloucester, Atlantic,'],
-      ['out',    '                 Cumberland, Salem, Cape May'],
-      ['out',    '  NOAA WX Radio: 162.550 MHz'],
-      ['out',    '  Station ID:    KIH28'],
-      ['out',    ''],
-      ['out',    '  Weather radio app:'],
-      ['out',    '  → thatonedudeaust.github.io/weather-radio'],
-      ['blank',  ''],
-    ];
+    print('  WEATHER & NWS', 'bright');
+    print('  ----------------------------------------', 'dim');
+    print('  NWS Office:    Mount Holly, NJ', 'out');
+    print('  Station ID:    KIH28', 'out');
+    print('  Frequency:     162.550 MHz', 'out');
+    print('  Coverage:      South Jersey', 'out');
+    print('  Counties:      Burlington, Camden, Gloucester,', 'out');
+    print('                 Atlantic, Cumberland, Salem, Cape May', 'out');
+    print('', 'out');
+    print('  Weather radio app:', 'out');
+    print('  thatonedudeaust.github.io/weather-radio', 'out');
+    printBlank();
   },
 
   skills: function() {
-    return [
-      ['accent', '  SKILLS'],
-      ['dim',    '  ─────────────────────────────────────'],
-      ['out',    '  HTML / CSS / JS    ████████████ 100%'],
-      ['out',    '  Roblox / Luau      ██████████░░  85%'],
-      ['out',    '  EAS / SAME         ████████████ 100%'],
-      ['out',    '  Web Audio API      █████████░░░  75%'],
-      ['out',    '  NWS API            ████████████ 100%'],
-      ['out',    '  Supabase           ████████░░░░  70%'],
-      ['out',    '  Being cool         ████████████ 100%'],
-      ['blank',  ''],
-    ];
+    print('  SKILLS', 'bright');
+    print('  ----------------------------------------', 'dim');
+    print('  HTML / CSS / JS    ||||||||||||  100%', 'out');
+    print('  Roblox / Luau      ||||||||||    85%', 'out');
+    print('  EAS / SAME         ||||||||||||  100%', 'out');
+    print('  Web Audio API      |||||||||     75%', 'out');
+    print('  NWS API            ||||||||||||  100%', 'out');
+    print('  Supabase           ||||||||      70%', 'out');
+    print('  Being cool         ||||||||||||  100%', 'out');
+    printBlank();
   },
 
   links: function() {
-    return [
-      ['accent', '  LINKS'],
-      ['dim',    '  ─────────────────────────────────────'],
-      ['out',    '  GitHub   → github.com/thatonedudeaust'],
-      ['out',    '  X        → x.com/thatonedudeaust'],
-      ['out',    '  Roblox   → roblox.com/users/search?keyword=thatonedudeaust'],
-      ['out',    '  eBay     → ebay.com/usr/thatonedudeaust'],
-      ['out',    '  Site     → thatonedudeaust.com'],
-      ['blank',  ''],
-    ];
-  },
-
-  changelog: function() {
-    return [
-      ['out',    '  Redirecting to changelog...'],
-      ['out',    '  → thatonedudeaust.com/changelog'],
-      ['blank',  ''],
-    ];
+    print('  LINKS', 'bright');
+    print('  ----------------------------------------', 'dim');
+    print('  GitHub   github.com/thatonedudeaust', 'out');
+    print('  X        x.com/thatonedudeaust', 'out');
+    print('  Roblox   roblox.com (search: thatonedudeaust)', 'out');
+    print('  eBay     ebay.com/usr/thatonedudeaust', 'out');
+    print('  Site     thatonedudeaust.com', 'out');
+    printBlank();
   },
 
   ls: function() {
-    return [
-      ['accent', '  SITE PAGES'],
-      ['dim',    '  ─────────────────────────────────────'],
-      ['out',    '  /              /login         /admin'],
-      ['out',    '  /changelog     /request       /eas'],
-      ['out',    '  /decoder       /typingtest    /info'],
-      ['out',    '  /qr            /excuse        /dice'],
-      ['out',    '  /hackerman     /404'],
-      ['blank',  ''],
-    ];
+    print('  SITE PAGES', 'bright');
+    print('  ----------------------------------------', 'dim');
+    print('  /              /login         /admin', 'out');
+    print('  /changelog     /request       /eas', 'out');
+    print('  /decoder       /typingtest    /info', 'out');
+    print('  /qr            /excuse        /dice', 'out');
+    print('  /hackerman     /404', 'out');
+    printBlank();
   },
 
   whoami: function() {
-    return [
-      ['out',    '  a visitor.'],
-      ['out',    '  or maybe a hacker.'],
-      ['out',    '  hard to say really.'],
-      ['blank',  ''],
-    ];
+    print('  a visitor.', 'out');
+    print('  or maybe a hacker.', 'out');
+    print('  hard to say really.', 'out');
+    printBlank();
   },
 
   date: function() {
     var now = new Date();
-    return [
-      ['out',    '  ' + now.toUTCString()],
-      ['out',    '  Local: ' + now.toLocaleString()],
-      ['blank',  ''],
-    ];
+    print('  UTC:   ' + now.toUTCString(), 'out');
+    print('  Local: ' + now.toLocaleString(), 'out');
+    printBlank();
   },
 
   uptime: function() {
@@ -309,203 +273,161 @@ var COMMANDS = {
     var days = Math.floor(diff / 86400);
     var hours = Math.floor((diff % 86400) / 3600);
     var mins = Math.floor((diff % 3600) / 60);
-    return [
-      ['out',    '  thatonedudeaust.com has been live for:'],
-      ['accent', '  ' + days + ' days, ' + hours + ' hours, ' + mins + ' minutes'],
-      ['blank',  ''],
-    ];
+    print('  thatonedudeaust.com uptime:', 'out');
+    print('  ' + days + ' days, ' + hours + ' hours, ' + mins + ' minutes', 'bright');
+    printBlank();
   },
 
   ping: function() {
-    return [
-      ['out',    '  PING thatonedudeaust.com'],
-      ['out',    '  64 bytes from thatonedudeaust.com: time=1.2ms'],
-      ['out',    '  64 bytes from thatonedudeaust.com: time=0.9ms'],
-      ['out',    '  64 bytes from thatonedudeaust.com: time=1.1ms'],
-      ['out',    '  3 packets transmitted, 3 received, 0% packet loss'],
-      ['blank',  ''],
-    ];
+    print('  PING thatonedudeaust.com', 'out');
+    print('  64 bytes: time=1.2ms', 'out');
+    print('  64 bytes: time=0.9ms', 'out');
+    print('  64 bytes: time=1.1ms', 'out');
+    print('  3 packets transmitted, 3 received, 0% packet loss', 'out');
+    printBlank();
+  },
+
+  changelog: function() {
+    print('  Redirecting...', 'out');
+    print('  thatonedudeaust.com/changelog', 'out');
+    printBlank();
   },
 
   hack: function() {
-    return [
-      ['out',    '  initiating hack sequence...'],
-      ['out',    '  ██████░░░░░░░░░░ 35%'],
-      ['out',    '  accessing mainframe...'],
-      ['out',    '  ████████████░░░░ 75%'],
-      ['out',    '  bypassing firewall...'],
-      ['out',    '  ████████████████ 100%'],
-      ['accent', '  I\'M IN.'],
-      ['out',    '  (you are literally just on a website)'],
-      ['blank',  ''],
-    ];
+    print('  initiating hack sequence...', 'out');
+    print('  [######----------] 35%  accessing mainframe', 'out');
+    print('  [############----] 75%  bypassing firewall', 'out');
+    print('  [################] 100% done', 'out');
+    print("  I'M IN.", 'bright');
+    print('  (you are literally just on a website)', 'out');
+    printBlank();
   },
 
   matrix: function() {
-    return [
-      ['accent', '  Wake up, Neo...'],
-      ['out',    '  The Matrix has you.'],
-      ['out',    '  Follow the white rabbit.'],
-      ['out',    '  ...'],
-      ['dim',    '  (this is just a terminal on a personal site lol)'],
-      ['blank',  ''],
-    ];
+    print('  Wake up, Neo...', 'bright');
+    print('  The Matrix has you.', 'out');
+    print('  Follow the white rabbit.', 'out');
+    print('  ...', 'dim');
+    print('  (this is just a terminal on a personal site lol)', 'dim');
+    printBlank();
   },
 
   coffee: function() {
-    return [
-      ['out',    '  '],
-      ['out',    '       ( ('],
-      ['out',    '        ) )'],
-      ['out',    '     ........'],
-      ['out',    '     |      |]'],
-      ['out',    '     \\      /'],
-      ['out',    '      `----\''],
-      ['out',    ''],
-      ['out',    '  Coffee brewing... ☕'],
-      ['out',    '  Status: essential'],
-      ['blank',  ''],
-    ];
+    print('       ( (', 'out');
+    print('        ) )', 'out');
+    print('     ........', 'out');
+    print('     |      |]', 'out');
+    print('     \\      /', 'out');
+    print("      `----'", 'out');
+    print('', 'out');
+    print('  Coffee status: essential', 'out');
+    printBlank();
   },
 
   coinflip: function() {
     var result = Math.random() < 0.5 ? 'HEADS' : 'TAILS';
-    return [
-      ['out',    '  flipping coin...'],
-      ['accent', '  ' + result],
-      ['blank',  ''],
-    ];
+    print('  flipping coin...', 'out');
+    print('  ' + result, 'bright');
+    printBlank();
   },
 
   rickroll: function() {
-    return [
-      ['out',    '  loading secret content...'],
-      ['out',    '  '],
-      ['accent', '  Never gonna give you up,'],
-      ['accent', '  Never gonna let you down,'],
-      ['accent', '  Never gonna run around and desert you.'],
-      ['out',    '  '],
-      ['out',    '  you played yourself.'],
-      ['blank',  ''],
-    ];
+    print('  loading secret content...', 'out');
+    print('', 'out');
+    print('  Never gonna give you up,', 'bright');
+    print('  Never gonna let you down,', 'bright');
+    print('  Never gonna run around and desert you.', 'bright');
+    print('', 'out');
+    print('  you played yourself.', 'out');
+    printBlank();
   },
 
   screams: function() {
-    return [
-      ['accent', '  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'],
-      ['accent', '  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'],
-      ['accent', '  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'],
-      ['out',    '  ...'],
-      ['out',    '  ok. better.'],
-      ['blank',  ''],
-    ];
+    print('  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', 'bright');
+    print('  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', 'bright');
+    print('  AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA', 'bright');
+    print('  ...', 'out');
+    print('  ok. better.', 'out');
+    printBlank();
   },
 
   uwu: function() {
-    return [
-      ['out',    '  no.'],
-      ['blank',  ''],
-    ];
+    print('  no.', 'out');
+    printBlank();
   },
 
   exit: function() {
-    return [
-      ['out',    '  there is no escape.'],
-      ['out',    '  you live here now.'],
-      ['blank',  ''],
-    ];
+    print('  there is no escape.', 'out');
+    print('  you live here now.', 'out');
+    printBlank();
   },
 
-  'sudo rm -rf /': function() {
-    return [
-      ['err',    '  uh oh.'],
-      ['err',    '  deleting everything...'],
-      ['err',    '  just kidding. you don\'t have sudo.'],
-      ['out',    '  nice try though.'],
-      ['blank',  ''],
-    ];
+  'sudo': function(args) {
+    if (args.join(' ') === 'rm -rf /') {
+      print('  uh oh.', 'err');
+      print('  deleting everything...', 'err');
+      print("  just kidding. you don't have sudo.", 'err');
+      print('  nice try though.', 'out');
+      printBlank();
+    } else {
+      print('  sudo: permission denied', 'err');
+      printBlank();
+    }
   },
 
   clear: function() {
     output.innerHTML = '';
-    return [];
   },
 };
-
-// Special roll command
-function handleRoll(args) {
-  var sides = parseInt(args[0]) || 6;
-  if (sides < 2 || sides > 1000) return [['err', '  Invalid die. Use a number between 2 and 1000.'], ['blank', '']];
-  var result = Math.floor(Math.random() * sides) + 1;
-  return [
-    ['out',    '  Rolling D' + sides + '...'],
-    ['accent', '  Result: ' + result],
-    ['blank',  ''],
-  ];
-}
-
-function print(lines) {
-  lines.forEach(function(line) {
-    var div = document.createElement('div');
-    div.className = 'line ' + (line[0] || 'out');
-    div.textContent = line[1] || '';
-    output.appendChild(div);
-  });
-  output.scrollTop = output.scrollHeight;
-}
-
-function printInput(cmd) {
-  var div = document.createElement('div');
-  div.className = 'line cmd';
-  div.textContent = 'aust@thatonedudeaust.com:~$ ' + cmd;
-  output.appendChild(div);
-}
 
 function handleCommand(raw) {
   var trimmed = raw.trim();
   if (!trimmed) return;
 
-  history.unshift(trimmed);
+  cmdHistory.unshift(trimmed);
   historyIdx = -1;
-  printInput(trimmed);
+  printCmd(trimmed);
 
   var parts = trimmed.split(' ');
   var cmd = parts[0].toLowerCase();
   var args = parts.slice(1);
 
-  // Special cases
-  if (trimmed.toLowerCase() === 'sudo rm -rf /' || trimmed.toLowerCase() === 'sudo rm -rf /*') {
-    print(COMMANDS['sudo rm -rf /']());
+  if (cmd === 'roll') {
+    var sides = parseInt(args[0]) || 6;
+    if (sides < 2 || sides > 10000) {
+      print('  Invalid die.', 'err');
+    } else {
+      var result = Math.floor(Math.random() * sides) + 1;
+      print('  Rolling D' + sides + '...', 'out');
+      print('  Result: ' + result, 'bright');
+    }
+    printBlank();
     return;
   }
 
-  if (cmd === 'roll') {
-    print(handleRoll(args));
+  if (cmd === 'sudo') {
+    COMMANDS['sudo'](args);
     return;
   }
 
   if (COMMANDS[cmd]) {
-    print(COMMANDS[cmd]());
+    COMMANDS[cmd](args);
   } else {
-    print([
-      ['err', '  command not found: ' + cmd],
-      ['out', '  type "help" to see available commands'],
-      ['blank', ''],
-    ]);
+    print('  command not found: ' + cmd, 'err');
+    print('  type "help" to see available commands', 'out');
+    printBlank();
   }
 }
 
-// Boot sequence
-function boot() {
-  BOOT.forEach(function(line) {
-    var div = document.createElement('div');
-    div.className = 'line ascii';
-    div.textContent = line;
-    output.appendChild(div);
-  });
-}
+// Boot
+BOOT.forEach(function(line) {
+  var div = document.createElement('div');
+  div.className = 'line bright';
+  div.textContent = line;
+  output.appendChild(div);
+});
 
-// Input handling
+// Input
 input.addEventListener('keydown', function(e) {
   if (e.key === 'Enter') {
     var val = input.value;
@@ -513,15 +435,15 @@ input.addEventListener('keydown', function(e) {
     handleCommand(val);
   } else if (e.key === 'ArrowUp') {
     e.preventDefault();
-    if (historyIdx < history.length - 1) {
+    if (historyIdx < cmdHistory.length - 1) {
       historyIdx++;
-      input.value = history[historyIdx];
+      input.value = cmdHistory[historyIdx];
     }
   } else if (e.key === 'ArrowDown') {
     e.preventDefault();
     if (historyIdx > 0) {
       historyIdx--;
-      input.value = history[historyIdx];
+      input.value = cmdHistory[historyIdx];
     } else {
       historyIdx = -1;
       input.value = '';
@@ -529,11 +451,7 @@ input.addEventListener('keydown', function(e) {
   }
 });
 
-// Always keep input focused
 document.addEventListener('click', function() { input.focus(); });
-document.addEventListener('keydown', function() { input.focus(); });
-
-boot();
 input.focus();
 </script>
 </body>
