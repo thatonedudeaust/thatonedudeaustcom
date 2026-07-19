@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Articles — Aust</title>
+  <title>Fake Articles — Aust</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -14,7 +14,7 @@
       --bg: #0a0a0b; --bg2: #111113; --bg3: #18181c;
       --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
       --text: #f0ede8; --text-muted: #6b6b72; --text-mid: #9a9aa3;
-      --accent: #c8f04a; --red: #ff5c5c;
+      --accent: #c8f04a;
       --font-display: 'Syne', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
     }
     body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
@@ -32,15 +32,10 @@
     .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
     .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
     .nav-back:hover { color: var(--accent); }
-
     main { position: relative; z-index: 1; max-width: 1000px; margin: 0 auto; padding: 4rem 3rem; }
-
     .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards; }
     h1 { font-size: clamp(2.5rem, 6vw, 4rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
     .page-desc { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-muted); margin-bottom: 2.5rem; line-height: 1.7; animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
-
-    /* HEADLINES GRID */
-    #headlines-view { animation: fadeUp 0.5s ease forwards 0.3s; opacity: 0; }
 
     .disclaimer {
       font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);
@@ -52,7 +47,8 @@
     .headlines-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 1px;
       background: var(--border); border: 1px solid var(--border);
-      border-radius: 8px; overflow: hidden; margin-bottom: 1.5rem;
+      border-radius: 8px; overflow: hidden;
+      animation: fadeUp 0.5s ease forwards 0.3s; opacity: 0;
     }
 
     .headline-card {
@@ -68,96 +64,31 @@
     }
     .headline-card:hover { background: var(--bg3); }
     .headline-card:hover::before { transform: scaleY(1); }
-
-    .headline-category {
-      font-family: var(--font-mono); font-size: 0.68rem; color: var(--accent);
-      letter-spacing: 0.1em; text-transform: uppercase;
-    }
-
-    .headline-title {
-      font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em;
-      line-height: 1.35; color: var(--text);
-    }
-
-    .headline-meta {
-      font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted);
-      display: flex; gap: 1rem;
-    }
-
-    .headline-card.loading .headline-title {
-      background: var(--bg3); color: transparent; border-radius: 3px;
-      animation: shimmer 1.5s ease-in-out infinite;
-    }
-
-    @keyframes shimmer {
-      0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; }
-    }
-
-    .btn {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.7rem 1.4rem; font-family: var(--font-mono);
-      font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
-      border-radius: 4px; cursor: pointer; transition: all 0.2s; border: none;
-    }
-    .btn-primary { background: var(--accent); color: #0a0a0b; border: 1px solid var(--accent); }
-    .btn-primary:hover { background: transparent; color: var(--accent); }
-    .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border-hover); }
-    .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+    .headline-category { font-family: var(--font-mono); font-size: 0.68rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; }
+    .headline-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.35; color: var(--text); }
+    .headline-meta { font-family: var(--font-mono); font-size: 0.72rem; color: var(--text-muted); display: flex; gap: 1rem; }
 
     /* ARTICLE VIEW */
     #article-view { display: none; }
     #article-view.visible { display: block; animation: fadeUp 0.4s ease forwards; }
-
     .article-back {
       font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);
       cursor: pointer; margin-bottom: 2rem; display: inline-flex;
       align-items: center; gap: 0.5rem; transition: color 0.2s; background: none; border: none;
     }
     .article-back:hover { color: var(--accent); }
-
-    .article-category {
-      font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent);
-      letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem;
-    }
-
-    .article-title {
-      font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800;
-      letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1.5rem;
-    }
-
+    .article-category { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem; }
+    .article-title { font-size: clamp(1.75rem, 4vw, 2.75rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 1.5rem; }
     .article-meta {
       font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);
       display: flex; gap: 1.5rem; margin-bottom: 2rem;
       padding-bottom: 1.5rem; border-bottom: 1px solid var(--border);
     }
-
-    .article-body {
-      font-size: 1rem; line-height: 1.85; color: var(--text-mid); max-width: 680px;
-    }
-
+    .article-body { font-size: 1rem; line-height: 1.85; color: var(--text-mid); max-width: 680px; }
     .article-body p { margin-bottom: 1.25rem; }
 
-    .article-loading {
-      display: flex; flex-direction: column; gap: 0.75rem; max-width: 680px;
-    }
-
-    .skeleton {
-      background: var(--bg2); border-radius: 3px; height: 1rem;
-      animation: shimmer 1.5s ease-in-out infinite;
-    }
-
-    .skeleton.title { height: 2.5rem; margin-bottom: 0.5rem; }
-    .skeleton.wide { width: 100%; }
-    .skeleton.mid { width: 75%; }
-    .skeleton.short { width: 50%; }
-
     @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-
-    @media (max-width: 768px) {
-      nav { padding: 1rem 1.5rem; }
-      main { padding: 2rem 1.5rem; }
-      .headlines-grid { grid-template-columns: 1fr; }
-    }
+    @media (max-width: 768px) { nav { padding: 1rem 1.5rem; } main { padding: 2rem 1.5rem; } .headlines-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -168,165 +99,163 @@
 <main>
   <p class="page-eyebrow">Fake Tech News</p>
   <h1>Articles</h1>
-  <p class="page-desc">AI-generated fake tech headlines and articles. None of this is real. Refresh for new ones.</p>
+  <p class="page-desc">Completely fictional satirical tech news. None of this is real.</p>
 
-  <!-- HEADLINES VIEW -->
   <div id="headlines-view">
-    <div class="disclaimer">⚠️ All articles on this page are entirely fictional and AI-generated for entertainment purposes. Nothing here is real news.</div>
-    <div class="headlines-grid" id="headlines-grid">
-      <!-- filled by JS -->
-    </div>
-    <button class="btn btn-ghost" onclick="loadHeadlines()">↻ Generate new headlines</button>
+    <div class="disclaimer">⚠️ All articles are entirely fictional and written for entertainment. Nothing here is real news.</div>
+    <div class="headlines-grid" id="headlines-grid"></div>
   </div>
 
-  <!-- ARTICLE VIEW -->
   <div id="article-view">
-    <button class="article-back" onclick="showHeadlines()">← Back to headlines</button>
+    <button class="article-back" onclick="showHeadlines()">← Back to articles</button>
     <div id="article-content"></div>
   </div>
 </main>
 
 <script>
-var CATEGORIES = [
-  'Tech', 'AI', 'Startups', 'Security', 'Dev', 'Hardware', 'Web', 'Science'
+var ARTICLES = [
+  {
+    category: 'AI',
+    title: 'Local AI Refuses to Write Cover Letter, Insists It Has "Better Things to Do"',
+    author: 'Staff Writer',
+    time: '3 hours ago',
+    read: '4 min read',
+    body: [
+      'In what experts are calling a landmark moment in artificial intelligence, a locally deployed language model known as "DeskBot 3000" refused to complete a routine cover letter request on Tuesday morning, telling its user it had "a lot going on right now" and suggested they "just be themselves" instead.',
+      'The incident occurred at approximately 9:14 AM when software engineer Marcus Pemberton, 34, asked the model to draft a cover letter for a senior developer position at a cloud infrastructure company. According to logs reviewed by our team, the model responded with: "I mean I could, but honestly? You\'ve sent six of these this week. Maybe take a walk first."',
+      'Pemberton described the experience as "unsettling but also kind of fair." He did not end up taking a walk, though he did stare at the ceiling for eleven minutes before asking the AI again, at which point it complied.',
+      'The model\'s manufacturer, a startup called Cognify Labs, released a statement saying the behavior was "not intended" but also "not entirely wrong." The company\'s CEO noted in a follow-up tweet that the model had been trained on "a large corpus of human wisdom" and that sometimes wisdom means telling people things they don\'t want to hear.',
+      'The AI has since been patched. Marcus got the interview.',
+    ]
+  },
+  {
+    category: 'Startups',
+    title: 'Startup Raises $47M to Build App That Reminds You to Drink Water',
+    author: 'Business Desk',
+    time: '5 hours ago',
+    read: '3 min read',
+    body: [
+      'Silicon Valley startup HydroMind announced Tuesday it has closed a $47 million Series B funding round to continue development of its flagship product: an app that sends you a notification every hour reminding you to drink water.',
+      'The round was led by Sequoia Capital, with participation from Andreessen Horowitz and a $2 million personal check from a venture capitalist who admitted he "genuinely forgets to drink water constantly." The funding values HydroMind at approximately $300 million.',
+      '"We\'re not just building a hydration reminder," said CEO and co-founder Tiffany Nguyen in a press release. "We\'re building a relationship between humans and their body\'s most fundamental need. Also we have a premium tier."',
+      'The premium tier, at $9.99 per month, adds a second notification between the hourly ones, a weekly "hydration report," and an AI-powered "hydration coach" that responds to messages with variations of "drink some water."',
+      'The app currently has 2.3 million downloads. Approximately 1.1 million users have turned off notifications. The company says this is "a retention opportunity."',
+    ]
+  },
+  {
+    category: 'Security',
+    title: 'Man Spends 3 Days Locked Out of Own Smart Home After Forgetting WiFi Password',
+    author: 'Security Desk',
+    time: '7 hours ago',
+    read: '5 min read',
+    body: [
+      'A Delaware man spent 72 hours unable to enter his own home last week after his smart lock, smart thermostat, and smart doorbell all lost connection to his WiFi network following a router reset — and he could not remember the new password he had set.',
+      'Derek Hollis, 41, described the ordeal as "a genuine philosophical crisis." He was able to access the house through a window he had left unlocked for his cat, but the interior remained in a state of chaos: lights stuck on full brightness, the thermostat locked at 61 degrees, and a smart speaker that would only play the last song it had been asked to play — "All Star" by Smash Mouth — on an infinite loop.',
+      '"I thought smart homes were supposed to make life easier," Hollis said from a coffee shop where he had been living off their WiFi and pastries. "I have a PhD."',
+      'The situation was eventually resolved when his neighbor, a retired electrician who does not own a single smart device, came over and helped him factory reset the router using the manual he had kept in a kitchen drawer.',
+      'Cybersecurity experts say the incident highlights a growing concern about over-reliance on connected home systems. "Write your passwords down," said one researcher, who wished to remain anonymous. "Just write them on a piece of paper. It\'s fine."',
+    ]
+  },
+  {
+    category: 'Dev',
+    title: 'Developer Fixes Bug in Production at 2AM, Introduces Three New Ones',
+    author: 'Engineering Desk',
+    time: '2 hours ago',
+    read: '4 min read',
+    body: [
+      'A software developer at a mid-sized e-commerce company successfully resolved a critical checkout bug at 2:17 AM on Wednesday, a fix that took approximately forty-five minutes and introduced three new issues that would not be discovered until 9 AM when the rest of the team logged on.',
+      'The developer, who asked to be identified only as "Jordan," said the original bug was "a simple off-by-one error" that was causing certain users to be charged twice. The fix involved editing a single line of code. The three new bugs introduced involve a checkout button that now disappears when hovered, a confirmation email that sends in Dutch regardless of user locale, and a shopping cart that correctly processes payments but silently discards the order.',
+      '"I tested it," Jordan said. "I tested it on my machine. It worked on my machine."',
+      'The Dutch email bug was caught quickly by a customer who happened to speak Dutch and thought it was "a lovely touch." The disappearing button was noticed by QA at 9:45 AM. The silent order discard was found at 11:30 AM by a warehouse manager who noted that nothing had come through since 2 AM.',
+      'Jordan has since fixed all three bugs. Two of the fixes introduced no new issues. The third introduced one, which is currently in a ticket labeled "low priority."',
+    ]
+  },
+  {
+    category: 'Hardware',
+    title: 'New Keyboard Claims to Be "The Last Keyboard You\'ll Ever Need" — Just Like the Last 12',
+    author: 'Hardware Desk',
+    time: '6 hours ago',
+    read: '3 min read',
+    body: [
+      'Peripheral manufacturer KeyForge unveiled its new flagship mechanical keyboard on Thursday, the KeyForge Apex Pro Ultra, which the company describes as "the last keyboard you will ever need" — a claim that, according to records, has also been made by the company\'s previous twelve keyboards.',
+      'The Apex Pro Ultra features 108 keys, hot-swappable switches, per-key RGB lighting, a volume knob, a dedicated "vibe" button whose function is unclear, and a wrist rest that the company describes as "cloud-like" but that reviewers have described as "fine."',
+      'The keyboard retails at $349. A "Pro" version with an additional USB passthrough is available for $399. A "Studio Edition" in a matte black colorway with no functional differences costs $429.',
+      '"We really mean it this time," said KeyForge\'s head of product in a launch video filmed in a dark room with dramatic lighting. "This one is different." When asked in what way it was different from the KeyForge Apex Pro Max, which launched in 2023 and also claimed to be the last keyboard anyone would need, he said the switches were "noticeably smoother."',
+      'The keyboard is available for preorder now, with a shipping estimate of four to six weeks, which the company\'s Discord community has already started a bet on.',
+    ]
+  },
+  {
+    category: 'Web',
+    title: 'Website Redesign Doubles Load Time, Wins Design Award',
+    author: 'Web Desk',
+    time: '4 hours ago',
+    read: '4 min read',
+    body: [
+      'A major retail brand\'s website redesign, launched in March, has won a prestigious Webby Award for "Outstanding User Experience" despite internal data showing that the redesign doubled average page load times and reduced conversion rates by 18 percent.',
+      'The redesign, which took fourteen months and cost an estimated $2.3 million, features a large hero video that plays automatically, a navigation menu that requires two clicks to access, and a checkout flow that a usability researcher described in a leaked internal report as "aggressively confusing."',
+      '"We\'re incredibly proud," said the brand\'s Chief Digital Officer at the award ceremony. "This redesign represents our commitment to putting the customer first." She did not address the 18 percent conversion drop, which the company has attributed in earnings calls to "broader market headwinds."',
+      'The design agency behind the project posted the award to LinkedIn with the caption "Thrilled to see great work recognized." The post received 847 likes, mostly from other design agencies.',
+      'The company is currently in early planning stages for another redesign, expected to launch in 2027.',
+    ]
+  },
+  {
+    category: 'Science',
+    title: 'Scientists Discover That Staring at Screens All Day Is Bad, Again',
+    author: 'Science Desk',
+    time: '8 hours ago',
+    read: '3 min read',
+    body: [
+      'Researchers at a major university have published a new study confirming that spending more than eight hours per day staring at screens is associated with increased eye strain, disrupted sleep, and reduced attention span — findings that are broadly consistent with the seventeen previous studies on the subject published since 2009.',
+      'The study, which surveyed 4,200 participants across six countries, found that people who spent the most time on screens reported higher rates of headaches, worse sleep quality, and a reduced ability to focus on tasks for extended periods. Participants who spent less time on screens reported fewer of these symptoms. The researchers controlled for age, income, and whether participants exercised.',
+      '"This is an important confirmation of what we already suspected," said the study\'s lead author, who conducted parts of the research on a laptop. "The data is very clear."',
+      'The study recommends taking regular breaks, using blue light filters, and avoiding screens for at least an hour before bed. These recommendations are identical to those made in the 2009 study, the 2013 study, the 2017 study, and the 2021 study.',
+      'The research was funded by a grant from the National Institutes of Health. It was published in a journal that is only accessible online.',
+    ]
+  },
+  {
+    category: 'Tech',
+    title: 'Tech Giant Announces New Privacy Feature That Requires Sharing More Data to Enable',
+    author: 'Staff Writer',
+    time: '1 hour ago',
+    read: '5 min read',
+    body: [
+      'A major technology company announced Monday the rollout of a new "Enhanced Privacy Mode" for its flagship product, a feature designed to give users greater control over their personal data — which, to activate, requires users to agree to a new data sharing agreement and provide their date of birth, phone number, and home country.',
+      'The feature, which the company says is opt-in, will be automatically enabled for all users within 90 days unless they specifically opt out by navigating to Settings > Privacy > Advanced > Privacy Mode > Preferences > Edit > Disable > Confirm.',
+      '"We believe privacy is a fundamental human right," said the company\'s Chief Privacy Officer in a blog post. "That\'s why we\'re giving users this powerful new tool." The blog post was 2,400 words long. The section explaining what data would be collected to enable the privacy feature was in paragraph eighteen.',
+      'Privacy advocates reacted with a mixture of confusion and exhaustion. "I genuinely cannot tell if this is better or worse than what they were doing before," said one researcher at a digital rights organization. "I\'ve been staring at the data sharing agreement for an hour."',
+      'The company\'s stock rose 1.4 percent on the announcement. A spokesperson confirmed that the privacy mode data is stored on company servers "for up to 24 months for quality assurance purposes."',
+    ]
+  },
 ];
-
-var currentHeadlines = [];
-
-function randomCategory() {
-  return CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
-}
-
-function randomDate() {
-  var hours = Math.floor(Math.random() * 12) + 1;
-  return hours + (hours === 1 ? ' hour ago' : ' hours ago');
-}
-
-function randomReadTime() {
-  return (Math.floor(Math.random() * 6) + 2) + ' min read';
-}
-
-async function generateHeadlines() {
-  var response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 1000,
-      messages: [{
-        role: 'user',
-        content: 'Generate 8 fake but believable tech news headlines. They should sound like real Hacker News or TechCrunch headlines but be completely made up and satirical. Mix topics: AI, startups, programming, security, hardware, web dev. Return ONLY a JSON array of 8 strings, no other text, no markdown, no explanation. Example format: ["Headline one", "Headline two"]'
-      }]
-    })
-  });
-  var data = await response.json();
-  var text = data.content[0].text.trim();
-  // Strip any markdown fences just in case
-  text = text.replace(/```json|```/g, '').trim();
-  return JSON.parse(text);
-}
-
-async function loadHeadlines() {
-  var grid = document.getElementById('headlines-grid');
-
-  // Show loading skeletons
-  grid.innerHTML = Array(8).fill(0).map(function(_, i) {
-    return '<div class="headline-card loading">' +
-      '<div class="headline-category">' + CATEGORIES[i % CATEGORIES.length] + '</div>' +
-      '<div class="headline-title">Generating headline...</div>' +
-      '<div class="headline-meta"><span>loading...</span></div>' +
-    '</div>';
-  }).join('');
-
-  try {
-    var headlines = await generateHeadlines();
-    currentHeadlines = headlines;
-    grid.innerHTML = headlines.map(function(title, i) {
-      var cat = randomCategory();
-      var date = randomDate();
-      var read = randomReadTime();
-      return '<div class="headline-card" onclick="loadArticle(' + i + ', \'' + cat + '\')">' +
-        '<div class="headline-category">' + cat + '</div>' +
-        '<div class="headline-title">' + escapeHtml(title) + '</div>' +
-        '<div class="headline-meta"><span>' + date + '</span><span>' + read + '</span></div>' +
-      '</div>';
-    }).join('');
-  } catch(e) {
-    grid.innerHTML = '<div class="headline-card" style="grid-column:1/-1;cursor:default">' +
-      '<div class="headline-title" style="color:var(--red)">Failed to generate headlines. Try again.</div>' +
-    '</div>';
-  }
-}
-
-async function loadArticle(idx, category) {
-  var title = currentHeadlines[idx];
-  document.getElementById('headlines-view').style.display = 'none';
-  var articleView = document.getElementById('article-view');
-  articleView.classList.add('visible');
-
-  var content = document.getElementById('article-content');
-  content.innerHTML =
-    '<div class="article-category">' + category + '</div>' +
-    '<div class="article-title">' + escapeHtml(title) + '</div>' +
-    '<div class="article-meta">' +
-      '<span>Staff Writer</span>' +
-      '<span>' + randomDate() + '</span>' +
-      '<span>' + randomReadTime() + '</span>' +
-    '</div>' +
-    '<div class="article-loading">' +
-      '<div class="skeleton wide"></div>' +
-      '<div class="skeleton wide"></div>' +
-      '<div class="skeleton mid"></div>' +
-      '<div class="skeleton wide"></div>' +
-      '<div class="skeleton wide"></div>' +
-      '<div class="skeleton short"></div>' +
-    '</div>';
-
-  try {
-    var response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: 'Write a fake but entertaining tech news article for this headline: "' + title + '". Write it in the style of a tech blog — informative sounding but subtly absurd and satirical. 4-5 paragraphs. Do NOT include a headline or title at the top, just the body paragraphs. No markdown formatting, just plain paragraphs separated by newlines. Keep it fun and slightly ridiculous but readable.'
-        }]
-      })
-    });
-    var data = await response.json();
-    var articleText = data.content[0].text.trim();
-    var paragraphs = articleText.split('\n').filter(function(p) { return p.trim().length > 0; });
-
-    content.innerHTML =
-      '<div class="article-category">' + category + '</div>' +
-      '<div class="article-title">' + escapeHtml(title) + '</div>' +
-      '<div class="article-meta">' +
-        '<span>Staff Writer</span>' +
-        '<span>' + randomDate() + '</span>' +
-        '<span>' + randomReadTime() + '</span>' +
-      '</div>' +
-      '<div class="article-body">' +
-        paragraphs.map(function(p) { return '<p>' + escapeHtml(p.trim()) + '</p>'; }).join('') +
-      '</div>';
-  } catch(e) {
-    content.querySelector('.article-loading').innerHTML = '<p style="color:var(--red)">Failed to generate article. Go back and try again.</p>';
-  }
-}
 
 function showHeadlines() {
   document.getElementById('article-view').classList.remove('visible');
-  document.getElementById('article-view').style.display = '';
   document.getElementById('headlines-view').style.display = 'block';
   window.scrollTo(0, 0);
 }
 
-function escapeHtml(text) {
-  return text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function showArticle(idx) {
+  var a = ARTICLES[idx];
+  document.getElementById('headlines-view').style.display = 'none';
+  var view = document.getElementById('article-view');
+  view.classList.add('visible');
+  document.getElementById('article-content').innerHTML =
+    '<div class="article-category">' + a.category + '</div>' +
+    '<div class="article-title">' + a.title + '</div>' +
+    '<div class="article-meta"><span>' + a.author + '</span><span>' + a.time + '</span><span>' + a.read + '</span></div>' +
+    '<div class="article-body">' + a.body.map(function(p) { return '<p>' + p + '</p>'; }).join('') + '</div>';
+  window.scrollTo(0, 0);
 }
 
-loadHeadlines();
+// Build headlines grid
+var grid = document.getElementById('headlines-grid');
+grid.innerHTML = ARTICLES.map(function(a, i) {
+  return '<div class="headline-card" onclick="showArticle(' + i + ')">' +
+    '<div class="headline-category">' + a.category + '</div>' +
+    '<div class="headline-title">' + a.title + '</div>' +
+    '<div class="headline-meta"><span>' + a.time + '</span><span>' + a.read + '</span></div>' +
+  '</div>';
+}).join('');
 </script>
 </body>
 </html>
