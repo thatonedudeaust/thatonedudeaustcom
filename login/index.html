@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
   <script src="/supabase.min.js"></script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -157,10 +158,7 @@
 
     .back-link:hover { color: var(--accent); }
 
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+    .cf-turnstile { margin-top: 0.5rem; margin-bottom: 0.25rem; }
   </style>
 </head>
 <body>
@@ -179,6 +177,7 @@
       <input type="password" id="password" placeholder="••••••••" />
     </div>
 
+    <div class="cf-turnstile" data-sitekey="0x4AAAAAAD7XZABHnksqiyxV" data-theme="dark"></div>
     <button class="btn" id="login-btn">Sign in →</button>
     <div class="error-msg" id="error-msg"></div>
     <a href="/" class="back-link">← Back to home</a>
@@ -201,6 +200,13 @@
       const btn = document.getElementById('login-btn');
       const errEl = document.getElementById('error-msg');
 
+      // Check Turnstile
+      const token = document.querySelector('[name="cf-turnstile-response"]')?.value;
+      if (!token) {
+        showError('Please complete the captcha.');
+        return;
+      }
+
       if (!email || !password) {
         showError('Please fill in all fields.');
         return;
@@ -216,6 +222,8 @@
         showError('Invalid email or password.');
         btn.disabled = false;
         btn.textContent = 'Sign in →';
+        // Reset turnstile
+        if (window.turnstile) turnstile.reset();
       } else {
         window.location.href = '/';
       }
