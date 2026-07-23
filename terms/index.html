@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service — Aust</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230a0a0b'/%3E%3Ctext x='16' y='23' font-family='Arial Black,sans-serif' font-size='20' font-weight='900' fill='%23c8f04a' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a0b; --bg2: #111113; --bg3: #18181c;
+      --border: rgba(255,255,255,0.07); --border-hover: rgba(255,255,255,0.14);
+      --text: #f0ede8; --text-muted: #6b6b72; --text-mid: #9a9aa3;
+      --accent: #c8f04a;
+      --font-display: 'Syne', sans-serif; --font-mono: 'IBM Plex Mono', monospace;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-display); min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; opacity: 0.4;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.25rem 3rem; border-bottom: 1px solid var(--border);
+      background: rgba(10,10,11,0.85); backdrop-filter: blur(12px);
+    }
+    .nav-logo { font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent); letter-spacing: 0.05em; text-decoration: none; }
+    .nav-back { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--accent); }
+
+    main { position: relative; z-index: 1; max-width: 780px; margin: 0 auto; padding: 4rem 3rem; }
+
+    .page-eyebrow { font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent); letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.75rem; animation: fadeUp 0.5s ease forwards; }
+    h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.5rem; animation: fadeUp 0.5s ease forwards 0.1s; opacity: 0; }
+    .last-updated { font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted); margin-bottom: 3rem; animation: fadeUp 0.5s ease forwards 0.2s; opacity: 0; }
+
+    .toc {
+      background: var(--bg2); border: 1px solid var(--border); border-radius: 8px;
+      padding: 1.5rem; margin-bottom: 3rem;
+      animation: fadeUp 0.5s ease forwards 0.3s; opacity: 0;
+    }
+    .toc-title { font-family: var(--font-mono); font-size: 0.68rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 1rem; }
+    .toc a { display: block; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); text-decoration: none; padding: 0.2rem 0; transition: color 0.2s; }
+    .toc a:hover { color: var(--accent); }
+    .toc a::before { content: '→ '; color: var(--accent); }
+
+    .section { margin-bottom: 3rem; animation: fadeUp 0.5s ease forwards 0.4s; opacity: 0; }
+    .section + .section { animation-delay: 0s; }
+
+    .section-num { font-family: var(--font-mono); font-size: 0.72rem; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .section h2 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 1.25rem; }
+    .section p { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-mid); line-height: 1.85; margin-bottom: 1rem; }
+    .section ul { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-mid); line-height: 1.85; padding-left: 1.5rem; margin-bottom: 1rem; }
+    .section ul li { margin-bottom: 0.4rem; }
+    .section ul li::marker { color: var(--accent); }
+
+    .divider { height: 1px; background: var(--border); margin: 3rem 0; }
+
+    .contact-box {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-left: 3px solid var(--accent);
+      border-radius: 4px; padding: 1.25rem 1.5rem;
+      font-family: var(--font-mono); font-size: 0.82rem; color: var(--text-mid); line-height: 1.7;
+    }
+    .contact-box a { color: var(--accent); text-decoration: none; }
+    .contact-box a:hover { text-decoration: underline; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @media (max-width: 768px) { nav { padding: 1rem 1.5rem; } main { padding: 2rem 1.5rem; } }
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">thatonedudeaust.com</a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+<main>
+  <p class="page-eyebrow">Legal</p>
+  <h1>Terms of Service</h1>
+  <p class="last-updated">Last updated: July 2026</p>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <a href="#acceptance">1. Acceptance of Terms</a>
+    <a href="#accounts">2. Accounts & Access</a>
+    <a href="#acceptable-use">3. Acceptable Use</a>
+    <a href="#data">4. Data Collection & Privacy</a>
+    <a href="#ip">5. IP Address & Tracking</a>
+    <a href="#content">6. Content</a>
+    <a href="#termination">7. Account Termination</a>
+    <a href="#disclaimers">8. Disclaimers</a>
+    <a href="#changes">9. Changes to These Terms</a>
+    <a href="#contact">10. Contact</a>
+  </div>
+
+  <div class="section" id="acceptance">
+    <div class="section-num">01</div>
+    <h2>Acceptance of Terms</h2>
+    <p>By accessing or using thatonedudeaust.com (the "Site"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Site.</p>
+    <p>These terms apply to all visitors, users, and account holders. Your continued use of the Site constitutes acceptance of any updates to these terms.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="accounts">
+    <div class="section-num">02</div>
+    <h2>Accounts & Access</h2>
+    <p>Accounts on this Site are not publicly available. To obtain an account, you must submit a request through the /request page. Account creation is at the sole discretion of the Site owner.</p>
+    <ul>
+      <li>You are responsible for maintaining the confidentiality of your account credentials.</li>
+      <li>You may not share your account with others or allow others to access your account.</li>
+      <li>You must provide accurate information when requesting an account.</li>
+      <li>One account per person. Duplicate accounts may be removed without notice.</li>
+      <li>You must be at least 13 years of age to hold an account on this Site.</li>
+    </ul>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="acceptable-use">
+    <div class="section-num">03</div>
+    <h2>Acceptable Use</h2>
+    <p>You agree to use the Site only for lawful purposes. The following activities are strictly prohibited:</p>
+    <ul>
+      <li>Attempting to gain unauthorized access to any part of the Site, its backend systems, or other users' accounts.</li>
+      <li>Using the Site to transmit spam, malware, or any harmful content.</li>
+      <li>Attempting to reverse engineer, scrape, or extract data from the Site in an automated or unauthorized manner.</li>
+      <li>Using the Site for any illegal activity under applicable law.</li>
+      <li>Harassing, threatening, or abusing other users or the Site owner.</li>
+      <li>Impersonating another person or entity.</li>
+      <li>Attempting to disrupt or degrade the performance of the Site.</li>
+    </ul>
+    <p>Violation of these rules may result in immediate account termination and may be reported to relevant authorities where applicable.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="data">
+    <div class="section-num">04</div>
+    <h2>Data Collection & Privacy</h2>
+    <p>This Site collects and stores the following data:</p>
+    <ul>
+      <li><strong style="color:var(--text)">Account data</strong> — If you have an account, your email address, hashed password, username, and role are stored in a Supabase database.</li>
+      <li><strong style="color:var(--text)">Account requests</strong> — When you submit an account request, your email, password, and reason for requesting are stored until the request is reviewed.</li>
+      <li><strong style="color:var(--text)">Theme preferences</strong> — If you are a logged-in member, your selected color theme is stored in the database.</li>
+      <li><strong style="color:var(--text)">Visitor count</strong> — A global visitor counter is incremented once per browser session. No personal information is tied to this count.</li>
+      <li><strong style="color:var(--text)">Typing test scores</strong> — If you complete the typing test, your WPM, accuracy, time, and the prompt used are stored in the leaderboard database. No personal information is attached to these scores.</li>
+    </ul>
+    <p>This Site does not sell, share, or distribute your personal data to any third parties. Data is stored securely via Supabase and is only accessible to the Site owner.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="ip">
+    <div class="section-num">05</div>
+    <h2>IP Address & Tracking</h2>
+    <p>This Site uses Cloudflare as its DNS and domain provider. Cloudflare may collect your IP address and other connection metadata as part of its standard network operations. This is outside the direct control of the Site owner. You can review Cloudflare's privacy policy at cloudflare.com/privacypolicy.</p>
+    <p>This Site does not directly log or store individual IP addresses. However, the following third-party services used by this Site may process your IP as part of their normal operation:</p>
+    <ul>
+      <li><strong style="color:var(--text)">Cloudflare</strong> — DNS, domain routing, and CAPTCHA (Turnstile)</li>
+      <li><strong style="color:var(--text)">Supabase</strong> — Database and authentication provider</li>
+      <li><strong style="color:var(--text)">GitHub Pages</strong> — Site hosting</li>
+      <li><strong style="color:var(--text)">Google Fonts</strong> — Font delivery</li>
+    </ul>
+    <p>The Cloudflare Turnstile CAPTCHA on the login page may analyze your browser environment and behavior to determine if you are human. No data collected by Turnstile is accessible to or stored by the Site owner.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="content">
+    <div class="section-num">06</div>
+    <h2>Content</h2>
+    <p>All content on this Site — including but not limited to the EAS encoder, decoder, typing test, fake articles, terminal, and tools — is provided for personal, educational, and entertainment purposes only.</p>
+    <p>The fake articles on this Site (/fakearticles) are entirely fictional and satirical. They are not intended to represent real events, real people, or real companies. Any resemblance to actual events is coincidental.</p>
+    <p>The EAS encoder and decoder tools are provided for educational and hobbyist use only. Use of these tools to interfere with, impersonate, or disrupt real Emergency Alert System broadcasts is illegal and strictly prohibited.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="termination">
+    <div class="section-num">07</div>
+    <h2>Account Termination</h2>
+    <p>The Site owner reserves the right to suspend or permanently terminate any account at any time, for any reason, with or without notice. Reasons for termination may include but are not limited to:</p>
+    <ul>
+      <li>Violation of these Terms of Service.</li>
+      <li>Suspicious or abusive behavior.</li>
+      <li>Inactivity over an extended period.</li>
+      <li>At the sole discretion of the Site owner.</li>
+    </ul>
+    <p>Upon termination, your account data may be deleted from the database. You may request deletion of your data at any time by contacting the Site owner.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="disclaimers">
+    <div class="section-num">08</div>
+    <h2>Disclaimers</h2>
+    <p>This Site is a personal project maintained by a single individual. It is provided "as is" without any warranties, express or implied. The Site owner makes no guarantees regarding uptime, data retention, or continued availability of any feature.</p>
+    <p>The Site owner is not liable for any damages, data loss, or other harm arising from the use or inability to use this Site or its tools.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="changes">
+    <div class="section-num">09</div>
+    <h2>Changes to These Terms</h2>
+    <p>These Terms of Service may be updated at any time. The "Last updated" date at the top of this page will reflect the most recent revision. Continued use of the Site after changes are posted constitutes acceptance of the updated terms.</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="section" id="contact">
+    <div class="section-num">10</div>
+    <h2>Contact</h2>
+    <p>If you have any questions about these Terms of Service, data stored about you, or wish to request account or data deletion, you can contact the Site owner at:</p>
+    <div class="contact-box">
+      📧 <a href="mailto:admin@thatonedudeaust.com">admin@thatonedudeaust.com</a><br />
+      🌐 <a href="https://thatonedudeaust.com">thatonedudeaust.com</a>
+    </div>
+  </div>
+
+</main>
+</body>
+</html>
