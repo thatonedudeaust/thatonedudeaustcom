@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>~*~AuSt'S CoRnEr Of ThE iNtErNeT~*~</title>
+  <style>
+    body {
+      background-color: #000000;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Crect width='40' height='40' fill='%23000000'/%3E%3Ccircle cx='20' cy='20' r='1.5' fill='%23003300' opacity='0.8'/%3E%3Ccircle cx='0' cy='0' r='1.5' fill='%23003300' opacity='0.8'/%3E%3Ccircle cx='40' cy='0' r='1.5' fill='%23003300' opacity='0.8'/%3E%3Ccircle cx='0' cy='40' r='1.5' fill='%23003300' opacity='0.8'/%3E%3Ccircle cx='40' cy='40' r='1.5' fill='%23003300' opacity='0.8'/%3E%3C/svg%3E");
+      font-family: Verdana, Arial, sans-serif;
+      color: #00ff00;
+      margin: 0;
+      padding: 0;
+    }
+
+    marquee.top {
+      background: linear-gradient(90deg, #ff0000, #ff6600, #ffff00, #00ff00, #0000ff, #ff00ff, #ff0000);
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      padding: 3px 0;
+      font-family: 'Comic Sans MS', cursive;
+      text-shadow: 1px 1px black;
+    }
+
+    marquee.bottom {
+      background-color: #000033;
+      color: #00ffff;
+      font-size: 12px;
+      padding: 3px 0;
+      border-top: 1px solid #00ffff;
+    }
+
+    #wrapper {
+      width: 800px;
+      margin: 0 auto;
+    }
+
+    #header {
+      text-align: center;
+      padding: 15px 5px;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='%23000033'/%3E%3C/svg%3E");
+      border: 3px double #00ff00;
+      margin-top: 5px;
+      position: relative;
+    }
+
+    #header h1 {
+      font-family: 'Comic Sans MS', cursive;
+      font-size: 42px;
+      color: #00ff00;
+      text-shadow: 0 0 10px #00ff00, 2px 2px #003300;
+      margin: 0 0 5px 0;
+      letter-spacing: 2px;
+    }
+
+    #header .subtitle {
+      font-family: 'Comic Sans MS', cursive;
+      color: #ff00ff;
+      font-size: 14px;
+      text-shadow: 1px 1px #000;
+    }
+
+    #header .online-status {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 10px;
+      color: #00ff00;
+      font-family: 'Courier New', monospace;
+      border: 1px solid #00ff00;
+      padding: 2px 6px;
+      background: #001100;
+    }
+
+    #nav {
+      background-color: #000033;
+      border-top: 2px solid #ff00ff;
+      border-bottom: 2px solid #ff00ff;
+      text-align: center;
+      padding: 5px;
+    }
+
+    #nav a {
+      color: #ffff00;
+      font-weight: bold;
+      font-size: 12px;
+      text-decoration: none;
+      margin: 0 8px;
+      font-family: 'Comic Sans MS', cursive;
+      border: 1px solid #ffff00;
+      padding: 2px 8px;
+      background: #000033;
+    }
+
+    #nav a:hover {
+      background: #ffff00;
+      color: #000033;
+    }
+
+    #columns {
+      display: table;
+      width: 100%;
+      border: 2px solid #00ff00;
+    }
+
+    #left {
+      display: table-cell;
+      width: 170px;
+      background-color: #000022;
+      padding: 8px;
+      vertical-align: top;
+      border-right: 2px dashed #00ff00;
+    }
+
+    #center {
+      display: table-cell;
+      background-color: #0a0a0a;
+      padding: 12px;
+      vertical-align: top;
+    }
+
+    #right {
+      display: table-cell;
+      width: 170px;
+      background-color: #000022;
+      padding: 8px;
+      vertical-align: top;
+      border-left: 2px dashed #ff00ff;
+    }
+
+    .sidebar-title {
+      font-family: 'Comic Sans MS', cursive;
+      font-size: 12px;
+      color: #00ffff;
+      border-bottom: 1px solid #00ffff;
+      margin: 10px 0 5px 0;
+      padding-bottom: 2px;
+      text-shadow: 0 0 5px #00ffff;
+    }
+
+    #left a, #right a {
+      display: block;
+      color: #00ff00;
+      font-size: 11px;
+      text-decoration: none;
+      margin: 2px 0;
+      padding: 1px 3px;
+      font-family: Verdana, sans-serif;
+    }
+
+    #left a:hover { color: #ffff00; background: #001100; }
+    #right a:hover { color: #ffff00; background: #001100; }
+
+    .section-header {
+      font-family: 'Comic Sans MS', cursive;
+      font-size: 18px;
+      color: #00ff00;
+      border-left: 4px solid #ff00ff;
+      padding-left: 8px;
+      margin: 15px 0 8px 0;
+      text-shadow: 0 0 8px #00ff00;
+    }
+
+    .content-box {
+      background-color: #001100;
+      border: 1px solid #00ff00;
+      padding: 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+      color: #ccffcc;
+      line-height: 1.7;
+    }
+
+    .content-box a { color: #00ffff; }
+    .content-box a:hover { color: #ffff00; }
+
+    .warning-box {
+      background-color: #330000;
+      border: 2px solid #ff0000;
+      padding: 8px;
+      margin: 10px 0;
+      text-align: center;
+      font-family: 'Comic Sans MS', cursive;
+      font-size: 13px;
+      color: #ffff00;
+      animation: warningpulse 2s ease-in-out infinite;
+    }
+
+    @keyframes warningpulse { 0%,100%{border-color:#ff0000} 50%{border-color:#ff6600} }
+
+    .hit-counter {
+      background: #000000;
+      color: #ff0000;
+      font-family: 'Courier New', monospace;
+      font-size: 22px;
+      padding: 3px 8px;
+      border: 2px inset #666;
+      display: inline-block;
+      letter-spacing: 6px;
+      text-shadow: 0 0 8px #ff0000;
+    }
+
+    table.proj {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 11px;
+      font-family: Verdana, sans-serif;
+    }
+
+    table.proj th {
+      background-color: #003300;
+      color: #00ff00;
+      padding: 4px 6px;
+      border: 1px solid #00ff00;
+      text-align: left;
+    }
+
+    table.proj td {
+      border: 1px solid #003300;
+      padding: 4px 6px;
+      background-color: #001100;
+      color: #aaffaa;
+    }
+
+    table.proj tr:hover td { background-color: #002200; }
+
+    .guestbook-entry {
+      background: #001133;
+      border: 1px solid #0000ff;
+      padding: 5px 8px;
+      margin: 4px 0;
+      font-size: 10px;
+    }
+
+    .guestbook-entry .gname { color: #00ffff; font-weight: bold; }
+    .guestbook-entry .gdate { color: #666699; font-size: 9px; }
+    .guestbook-entry .gmsg { color: #aaaadd; margin-top: 2px; }
+
+    .blink { animation: blinker 0.8s step-end infinite; }
+    @keyframes blinker { 50% { opacity: 0; } }
+
+    .rainbow {
+      background: linear-gradient(90deg, #ff0000, #ff6600, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: bold;
+      font-family: 'Comic Sans MS', cursive;
+    }
+
+    .star-row { text-align: center; color: #ffff00; font-size: 14px; margin: 8px 0; letter-spacing: 4px; }
+
+    .pixel-btn {
+      display: inline-block;
+      margin: 2px 0;
+    }
+
+    #footer {
+      background-color: #000033;
+      border: 2px double #ff00ff;
+      text-align: center;
+      padding: 8px;
+      font-size: 10px;
+      color: #9999ff;
+      margin-bottom: 5px;
+      font-family: Verdana, sans-serif;
+    }
+
+    #footer a { color: #00ffff; text-decoration: none; }
+    #footer a:hover { color: #ffff00; }
+
+    .about-table td {
+      font-size: 12px;
+      color: #ccffcc;
+      padding: 2px 6px;
+      font-family: Verdana, sans-serif;
+    }
+
+    .about-table td:first-child { color: #ffff00; font-weight: bold; width: 100px; }
+  </style>
+</head>
+<body>
+
+<marquee class="top" behavior="scroll" direction="left" scrollamount="4">
+  ★ WELCOME TO AUST'S CORNER OF THE INTERNET ★ &nbsp;&nbsp; EAS NERD | DEVELOPER | JERSEY BOY &nbsp;&nbsp; ★ SIGN MY GUESTBOOK PLZ ★ &nbsp;&nbsp; THIS SITE IS BEST VIEWED IN IE6 AT 800x600 &nbsp;&nbsp; ★ UNDER CONSTRUCTION ★ &nbsp;&nbsp; ★ WELCOME TO AUST'S CORNER OF THE INTERNET ★
+</marquee>
+
+<div id="wrapper">
+
+  <!-- HEADER -->
+  <div id="header">
+    <div class="online-status">● ONLINE</div>
+    <h1>~*~ AuSt's PaGe ~*~</h1>
+    <div class="subtitle">
+      &#9733; developer &#9733; eas nerd &#9733; jersey boy &#9733;<br/>
+      <span style="font-size:11px;color:#888888">est. 2026 | thatonedudeaust.com</span>
+    </div>
+    <br/>
+    <span style="font-size:11px;color:#aaaaaa;">You are visitor #</span> <span class="hit-counter">004521</span>
+  </div>
+
+  <!-- NAV -->
+  <div id="nav">
+    <a href="/">[ Home ]</a>
+    <a href="/eas">[ EAS Encoder ]</a>
+    <a href="/decoder">[ EAS Decoder ]</a>
+    <a href="/typingtest">[ Typing Test ]</a>
+    <a href="/changelog">[ Updates ]</a>
+    <a href="mailto:admin@thatonedudeaust.com">[ Email Me!! ]</a>
+  </div>
+
+  <div id="columns">
+
+    <!-- LEFT SIDEBAR -->
+    <div id="left">
+      <div class="sidebar-title">&#9658; Links</div>
+      <a href="/">&#9670; Home</a>
+      <a href="/eas">&#9670; EAS Encoder</a>
+      <a href="/decoder">&#9670; EAS Decoder</a>
+      <a href="/typingtest">&#9670; Typing Test</a>
+      <a href="/changelog">&#9670; Changelog</a>
+      <a href="/info">&#9670; Site Info</a>
+      <a href="/fakearticles">&#9670; Fake Articles</a>
+      <a href="/dice">&#9670; Dice Roller</a>
+      <a href="/excuse">&#9670; Excuse Gen</a>
+      <a href="/qr">&#9670; QR Codes</a>
+
+      <div class="sidebar-title">&#9658; Find Me</div>
+      <a href="https://github.com/thatonedudeaust">&#9670; GitHub</a>
+      <a href="https://x.com/thatonedudeaust">&#9670; X / Twitter</a>
+      <a href="https://thatonedudeaust.github.io/weather-radio">&#9670; WX Radio App</a>
+      <a href="mailto:admin@thatonedudeaust.com">&#9670; Email Me</a>
+
+      <div class="sidebar-title">&#9658; Cool Buttons</div>
+      <div class="pixel-btn">
+        <svg width="88" height="31" xmlns="http://www.w3.org/2000/svg">
+          <rect width="88" height="31" fill="#000000"/>
+          <rect x="1" y="1" width="86" height="29" fill="none" stroke="#00ff00" stroke-width="1"/>
+          <text x="44" y="13" font-family="Verdana" font-size="7" fill="#00ff00" text-anchor="middle">thatonedudeaust</text>
+          <text x="44" y="24" font-family="Verdana" font-size="8" fill="#00ffff" text-anchor="middle" font-weight="bold">.com</text>
+        </svg>
+      </div>
+      <div class="pixel-btn">
+        <svg width="88" height="31" xmlns="http://www.w3.org/2000/svg">
+          <rect width="88" height="31" fill="#cc0000"/>
+          <text x="44" y="12" font-family="Verdana" font-size="7" fill="white" text-anchor="middle" font-weight="bold">EAS ENCODER</text>
+          <text x="44" y="23" font-family="Verdana" font-size="6" fill="#ffff00" text-anchor="middle">47 CFR §11.31</text>
+          <rect width="88" height="31" fill="none" stroke="white" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="pixel-btn">
+        <svg width="88" height="31" xmlns="http://www.w3.org/2000/svg">
+          <rect width="88" height="31" fill="#004400"/>
+          <text x="44" y="12" font-family="Verdana" font-size="6" fill="#00ff00" text-anchor="middle">NOAA WX RADIO</text>
+          <text x="44" y="22" font-family="Verdana" font-size="6" fill="#00cc00" text-anchor="middle">KIH28 S.JERSEY</text>
+          <rect width="88" height="31" fill="none" stroke="#00ff00" stroke-width="1"/>
+        </svg>
+      </div>
+      <div class="pixel-btn">
+        <svg width="88" height="31" xmlns="http://www.w3.org/2000/svg">
+          <rect width="88" height="31" fill="#000033"/>
+          <text x="44" y="13" font-family="Verdana" font-size="7" fill="#ff00ff" text-anchor="middle">RAGE ALERTING</text>
+          <text x="44" y="23" font-family="Verdana" font-size="6" fill="#9900ff" text-anchor="middle">SYSTEMS</text>
+          <rect width="88" height="31" fill="none" stroke="#ff00ff" stroke-width="1"/>
+        </svg>
+      </div>
+
+      <br/>
+      <div style="font-size:9px;color:#555555;text-align:center;margin-top:8px">
+        no frames | no flash<br/>
+        just vibes
+      </div>
+    </div>
+
+    <!-- CENTER -->
+    <div id="center">
+
+      <div class="warning-box">
+        🚧 THIS PAGE IS UNDER CONSTRUCTION 🚧<br/>
+        <span style="font-size:10px">check back l8r for more stuff!!!</span>
+      </div>
+
+      <div class="star-row">· · · ★ · · · ★ · · · ★ · · · ★ · · · ★ · · ·</div>
+
+      <div class="section-header">&#128075; heyyy welcome!!!</div>
+      <div class="content-box">
+        <p>omg hi!!! welcome to my little slice of the internet lol. im <b style="color:#00ff00">aust</b> and i make websites, roblox games, and EAS stuff. if you dont know what EAS is... it's the Emergency Alert System. you know those scary beeping things on tv that say "THIS IS AN ALERT"??? yeah thats what im obsessed with lol</p>
+        <p>im from <b style="color:#ffff00">New Jersey</b> and i am the Lead Developer at <b style="color:#ff00ff">RAGE Alerting Systems</b> which is an EAS thing for Roblox. its pretty cool ngl</p>
+        <p>anyway pls look around my site and <span class="blink" style="color:#ff0000">SIGN MY GUESTBOOK!!!!</span> it means a lot :)</p>
+      </div>
+
+      <div class="star-row">· · · ★ · · · ★ · · · ★ · · · ★ · · · ★ · · ·</div>
+
+      <div class="section-header">&#128187; about me</div>
+      <table class="about-table" cellspacing="0" cellpadding="0">
+        <tr><td>name:</td><td>Aust</td></tr>
+        <tr><td>from:</td><td>New Jersey, USA 🇺🇸</td></tr>
+        <tr><td>job:</td><td>developer / EAS nerd</td></tr>
+        <tr><td>fav color:</td><td><span style="color:#00ff00">■</span> green (obviously)</td></tr>
+        <tr><td>fav song:</td><td>idk ask me later lol</td></tr>
+        <tr><td>email:</td><td><a href="mailto:admin@thatonedudeaust.com" style="color:#00ffff">admin@thatonedudeaust.com</a></td></tr>
+        <tr><td>mood:</td><td>building stuff as always</td></tr>
+      </table>
+      <br/>
+
+      <div class="star-row">· · · ★ · · · ★ · · · ★ · · · ★ · · · ★ · · ·</div>
+
+      <div class="section-header">&#128196; my projects</div>
+      <table class="proj" cellspacing="0">
+        <tr>
+          <th>project name</th>
+          <th>what it does</th>
+          <th>status</th>
+        </tr>
+        <tr>
+          <td><a href="/eas" style="color:#00ffff">EAS Encoder</a></td>
+          <td>generates real SAME FSK audio per 47 CFR §11.31</td>
+          <td><span style="color:#00ff00">✓ done!!!</span></td>
+        </tr>
+        <tr>
+          <td><a href="/decoder" style="color:#00ffff">EAS Decoder</a></td>
+          <td>upload audio and it decodes the SAME header</td>
+          <td><span style="color:#00ff00">✓ done!!!</span></td>
+        </tr>
+        <tr>
+          <td><a href="https://thatonedudeaust.github.io/weather-radio" style="color:#00ffff">WX Radio App</a></td>
+          <td>NOAA weather radio for South Jersey / KIH28</td>
+          <td><span style="color:#00ff00">✓ done!!!</span></td>
+        </tr>
+        <tr>
+          <td>RAGE Alerting Systems</td>
+          <td>Roblox EAS simulation (i am lead dev)</td>
+          <td><span style="color:#00ff00">✓ done!!!</span></td>
+        </tr>
+        <tr>
+          <td><a href="/typingtest" style="color:#00ffff">Typing Test</a></td>
+          <td>test ur wpm + global leaderboard</td>
+          <td><span style="color:#00ff00">✓ done!!!</span></td>
+        </tr>
+        <tr>
+          <td><a href="/fakearticles" style="color:#00ffff">Fake Articles</a></td>
+          <td>satirical fake tech news lmao</td>
+          <td><span style="color:#00ff00">✓ done!!!</span></td>
+        </tr>
+      </table>
+      <br/>
+
+      <div class="star-row">· · · ★ · · · ★ · · · ★ · · · ★ · · · ★ · · ·</div>
+
+      <div class="section-header">&#128227; latest updates</div>
+      <div class="content-box">
+        <p><span style="color:#ff0000;font-weight:bold">NEW!!!</span> Added EAS Decoder — upload audio, get the SAME header decoded</p>
+        <p><span style="color:#ff0000;font-weight:bold">NEW!!!</span> Added fake tech articles page lol</p>
+        <p><span style="color:#ff6600;font-weight:bold">UPD</span> Added Cloudflare Turnstile CAPTCHA to login page</p>
+        <p><span style="color:#ff6600;font-weight:bold">UPD</span> Added custom email admin@thatonedudeaust.com</p>
+        <p><span style="color:#ff6600;font-weight:bold">UPD</span> Added Terms of Service page</p>
+        <p style="font-size:10px;color:#555">→ full history at <a href="/changelog" style="color:#00ffff">/changelog</a></p>
+      </div>
+
+      <div class="star-row">· · · ★ · · · ★ · · · ★ · · · ★ · · · ★ · · ·</div>
+
+      <div class="section-header">&#9993; contact</div>
+      <div class="content-box">
+        email me at <a href="mailto:admin@thatonedudeaust.com">admin@thatonedudeaust.com</a> for collabs, questions, or just to say hey!!!<br/>
+        find me on <a href="https://github.com/thatonedudeaust">GitHub</a>, <a href="https://x.com/thatonedudeaust">X</a>, or <a href="https://www.roblox.com/users/search?keyword=thatonedudeaust">Roblox</a>.<br/>
+        <br/>
+        <span class="blink" style="color:#ffff00;font-family:'Comic Sans MS',cursive">★ SIGN THE GUESTBOOK ON THE RIGHT → ★</span>
+      </div>
+
+      <p style="font-size:10px;color:#333333;text-align:center;margin-top:15px">
+        <a href="/" style="color:#555">home</a> | <a href="/info" style="color:#555">info</a> | <a href="/terms" style="color:#555">terms</a> | <a href="/changelog" style="color:#555">changelog</a>
+        <br/>best viewed in internet explorer 6.0 at 800x600 | windows xp
+      </p>
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div id="right">
+      <div class="sidebar-title">&#9733; Guestbook</div>
+
+      <div class="guestbook-entry">
+        <div class="gname">xX_C00LK1D_Xx</div>
+        <div class="gdate">07/12/2026</div>
+        <div class="gmsg">dude ur EAS encoder is so sick omg</div>
+      </div>
+      <div class="guestbook-entry">
+        <div class="gname">weathernerd42</div>
+        <div class="gdate">07/08/2026</div>
+        <div class="gmsg">another EAS fan!! bookmarked :D</div>
+      </div>
+      <div class="guestbook-entry">
+        <div class="gname">robloxdev99</div>
+        <div class="gdate">06/30/2026</div>
+        <div class="gmsg">RAGE alerting is peak fr</div>
+      </div>
+      <div class="guestbook-entry">
+        <div class="gname">noaafan2026</div>
+        <div class="gdate">06/22/2026</div>
+        <div class="gmsg">KIH28 represent!!! south jersey 🌩️</div>
+      </div>
+
+      <div style="text-align:center;margin-top:4px">
+        <a href="#" style="color:#ffff00;font-size:10px;font-family:'Comic Sans MS',cursive">[ sign guestbook ]</a>
+      </div>
+
+      <div class="sidebar-title">&#9733; Now Playing</div>
+      <div style="background:#001100;border:1px solid #00ff00;padding:6px;font-size:10px;color:#00cc00">
+        ♪ currently: building stuff<br/>
+        ♪ mood: chaotic<br/>
+        ♪ status: online
+      </div>
+
+      <div class="sidebar-title">&#9733; EAS Nerd Stuff</div>
+      <div style="font-size:10px;color:#aaffaa;line-height:1.7">
+        baud: 520.83<br/>
+        mark: 2083.3 Hz<br/>
+        space: 1562.5 Hz<br/>
+        attn: 853+960 Hz<br/>
+        <a href="/eas" style="color:#00ffff">→ try encoder</a>
+      </div>
+
+      <div class="sidebar-title">&#9733; Fun Tools</div>
+      <div style="font-size:10px;line-height:1.9">
+        <a href="/dice">&#127922; dice roller</a><br/>
+        <a href="/excuse">&#128516; excuse gen</a><br/>
+        <a href="/qr">&#9638; qr codes</a><br/>
+        <a href="/typingtest">&#9000; typing test</a><br/>
+        <a href="/fakearticles">&#128�; fake news</a>
+      </div>
+
+      <div class="sidebar-title">&#9733; Site Info</div>
+      <div style="font-size:10px;color:#888888;line-height:1.7">
+        host: GitHub Pages<br/>
+        dns: Cloudflare<br/>
+        db: Supabase<br/>
+        est: 2026<br/>
+        pages: 14+<br/>
+        <a href="/info" style="color:#00ffff;font-size:9px">→ full info</a>
+      </div>
+
+      <br/>
+      <div style="font-size:9px;color:#444444;text-align:center">
+        &copy; 2026 Aust<br/>
+        <a href="/terms" style="color:#333333">terms</a>
+      </div>
+    </div>
+
+  </div><!-- end columns -->
+
+</div><!-- end wrapper -->
+
+<marquee class="bottom" behavior="scroll" direction="right" scrollamount="3">
+  &nbsp;&nbsp; ★ thatonedudeaust.com ★ &nbsp;&nbsp; EAS encoder | WX radio | typing test | fake articles | dice | QR codes &nbsp;&nbsp; ★ admin@thatonedudeaust.com ★ &nbsp;&nbsp; &copy; 2026 Aust &nbsp;&nbsp; ★ thatonedudeaust.com ★ &nbsp;&nbsp;
+</marquee>
+
+</body>
+</html>
