@@ -465,9 +465,69 @@
             <button class="btn btn-primary" onclick="addChangelogEntry()">Add entry →</button>
             <div class="msg msg-success" id="cl-success"></div>
             <div class="msg msg-error" id="cl-error"></div>
-
             <div style="margin-top:2rem;border-top:1px solid var(--border);padding-top:1.5rem">
               <div id="cl-list" style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted)">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- WEAS Radio -->
+        <div class="panel" style="max-width:1000px;margin:0 auto 2rem;position:relative;z-index:1">
+          <div class="panel-header">
+            <div class="panel-title">📻 WEAS Radio</div>
+          </div>
+          <div class="panel-body">
+            <p style="font-family:var(--font-mono);font-size:0.78rem;color:var(--text-muted);margin-bottom:1.5rem">Manage songs, jingles, and commercials. Use public Google Drive share links for audio files.</p>
+
+            <!-- Add Track Form -->
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:1.5rem;margin-bottom:1.5rem">
+              <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:1rem">Add Track</div>
+              <div class="form-grid">
+                <div class="field">
+                  <label>Type</label>
+                  <select id="radio-type">
+                    <option value="song">Song</option>
+                    <option value="jingle">Jingle / Station ID</option>
+                    <option value="commercial">Commercial</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label>Title</label>
+                  <input type="text" id="radio-title" placeholder="Track title" />
+                </div>
+                <div class="field">
+                  <label>Artist (optional)</label>
+                  <input type="text" id="radio-artist" placeholder="Artist name" />
+                </div>
+                <div class="field">
+                  <label>Google Drive URL</label>
+                  <input type="text" id="radio-url" placeholder="https://drive.google.com/file/d/..." />
+                </div>
+              </div>
+              <button class="btn btn-primary" onclick="addRadioTrack()">Add track →</button>
+              <div class="msg msg-success" id="radio-success"></div>
+              <div class="msg msg-error" id="radio-error"></div>
+            </div>
+
+            <!-- Songs -->
+            <div style="margin-bottom:1.5rem">
+              <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--accent);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
+                <span>🎵 Songs</span>
+                <button class="btn btn-ghost" onclick="loadRadioTracks()" style="font-size:0.68rem;padding:0.3rem 0.7rem">↻</button>
+              </div>
+              <div id="radio-songs-list" style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted)">Loading...</div>
+            </div>
+
+            <!-- Jingles -->
+            <div style="margin-bottom:1.5rem">
+              <div style="font-family:var(--font-mono);font-size:0.72rem;color:#5cb8ff;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem">📻 Jingles / Station IDs</div>
+              <div id="radio-jingles-list" style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted)">Loading...</div>
+            </div>
+
+            <!-- Commercials -->
+            <div>
+              <div style="font-family:var(--font-mono);font-size:0.72rem;color:var(--orange);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:0.75rem">📢 Commercials</div>
+              <div id="radio-commercials-list" style="font-family:var(--font-mono);font-size:0.82rem;color:var(--text-muted)">Loading...</div>
             </div>
           </div>
         </div>
