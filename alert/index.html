@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IPAWS — Emergency Alert</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #b22222;
+      --red-dark: #8b0000;
+      --red-light: #fdf0f0;
+      --blue: #003366;
+      --blue-light: #f0f4ff;
+      --gray: #f5f5f5;
+      --border: #cccccc;
+      --text: #1a1a1a;
+      --text-muted: #555555;
+    }
+
+    body {
+      background: var(--gray);
+      color: var(--text);
+      font-family: 'Source Sans 3', Arial, sans-serif;
+      font-size: 15px;
+      min-height: 100vh;
+    }
+
+    /* TOP BANNER */
+    .top-banner {
+      background: var(--blue);
+      color: white;
+      padding: 6px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .top-banner-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .gov-seal {
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+    }
+
+    .top-banner-site {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .top-banner-right {
+      font-size: 11px;
+      color: #aabbdd;
+    }
+
+    /* HEADER */
+    .site-header {
+      background: white;
+      border-bottom: 3px solid var(--red);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header-logo-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header-agency {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .header-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--blue);
+      letter-spacing: -0.01em;
+    }
+
+    .header-subtitle {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    /* ALERT BANNER */
+    .alert-banner {
+      background: var(--red);
+      color: white;
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .alert-banner-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: white;
+      animation: pulse 1s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* MAIN */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* ALERT CARD */
+    .alert-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-left: 6px solid var(--red);
+      border-radius: 2px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    }
+
+    .alert-card-header {
+      background: var(--red-light);
+      padding: 14px 20px;
+      border-bottom: 1px solid #f0cccc;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .alert-event-code {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      background: var(--red);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 2px;
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+      display: inline-block;
+    }
+
+    .alert-event-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--red-dark);
+      font-family: 'Source Serif 4', Georgia, serif;
+      line-height: 1.2;
+    }
+
+    .alert-status-badge {
+      background: var(--red);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 2px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .alert-card-meta {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      background: #fafafa;
+    }
+
+    .meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .meta-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); font-weight: 600; }
+    .meta-value { font-size: 13px; font-weight: 600; color: var(--text); }
+
+    .alert-card-body { padding: 20px; }
+
+    .alert-section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 6px;
+      margin-top: 16px;
+    }
+
+    .alert-section-title:first-child { margin-top: 0; }
+
+    .alert-message {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text);
+      background: var(--red-light);
+      border-left: 3px solid var(--red);
+      padding: 12px 16px;
+      font-family: 'Source Serif 4', Georgia, serif;
+    }
+
+    .alert-areas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .area-tag {
+      background: var(--blue-light);
+      border: 1px solid #aabbdd;
+      color: var(--blue);
+      font-size: 12px;
+      padding: 3px 10px;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+
+    .instructions-box {
+      background: #fff8e6;
+      border: 1px solid #e6c87a;
+      border-left: 3px solid #cc9900;
+      padding: 12px 16px;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .instructions-box ul { padding-left: 20px; margin-top: 6px; }
+    .instructions-box ul li { margin-bottom: 4px; }
+
+    /* SAME HEADER BOX */
+    .same-box {
+      background: #1a1a1a;
+      color: #00ff41;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      padding: 10px 14px;
+      border-radius: 2px;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    /* SIDEBAR */
+    .layout { display: grid; grid-template-columns: 1fr 280px; gap: 20px; }
+
+    .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+    .sidebar-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    .sidebar-card-header {
+      background: var(--blue);
+      color: white;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .sidebar-card-body { padding: 12px 14px; font-size: 13px; line-height: 1.7; }
+    .sidebar-card-body a { color: var(--blue); }
+
+    .sidebar-stat { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #f0f0f0; font-size: 12px; }
+    .sidebar-stat:last-child { border-bottom: none; }
+    .sidebar-stat-label { color: var(--text-muted); }
+    .sidebar-stat-value { font-weight: 700; color: var(--text); }
+
+    /* TICKER */
+    .ticker {
+      background: var(--blue);
+      color: white;
+      padding: 6px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      font-size: 12px;
+      letter-spacing: 0.03em;
+    }
+
+    .ticker-inner { display: inline-block; animation: ticker 30s linear infinite; }
+    @keyframes ticker { from { transform: translateX(100vw); } to { transform: translateX(-100%); } }
+
+    /* FOOTER */
+    .site-footer {
+      background: var(--blue);
+      color: #aabbdd;
+      padding: 20px;
+      font-size: 11px;
+      margin-top: 30px;
+      text-align: center;
+      line-height: 1.8;
+    }
+
+    .site-footer a { color: #88aadd; }
+
+    /* RANDOM ALERT SELECTOR */
+    .alert-nav {
+      background: white;
+      border: 1px solid var(--border);
+      padding: 10px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--text-muted);
+      border-radius: 2px;
+    }
+
+    .alert-nav button {
+      background: var(--blue);
+      color: white;
+      border: none;
+      padding: 5px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      border-radius: 2px;
+      font-weight: 600;
+    }
+
+    .alert-nav button:hover { background: #004488; }
+
+    /* DISCLAIMER */
+  #disclaimer-screen {
+    position: fixed; inset: 0; z-index: 9999;
+    background: #1a1a2e;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem;
+  }
+
+  .disclaimer-box {
+    background: white; max-width: 560px; width: 100%;
+    border-radius: 4px; overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  }
+
+  .disclaimer-header {
+    background: #b22222; color: white;
+    padding: 16px 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+
+  .disclaimer-header-icon { font-size: 1.5rem; flex-shrink: 0; }
+
+  .disclaimer-header-text h2 {
+    font-size: 16px; font-weight: 700; margin-bottom: 2px;
+    font-family: 'Source Sans 3', Arial, sans-serif;
+  }
+
+  .disclaimer-header-text p {
+    font-size: 12px; opacity: 0.85;
+    font-family: 'Source Sans 3', Arial, sans-serif;
+  }
+
+  .disclaimer-body {
+    padding: 24px;
+    font-family: 'Source Sans 3', Arial, sans-serif;
+    font-size: 14px; line-height: 1.7; color: #1a1a1a;
+  }
+
+  .disclaimer-body p { margin-bottom: 12px; }
+  .disclaimer-body p:last-of-type { margin-bottom: 20px; }
+
+  .disclaimer-btn {
+    width: 100%; padding: 12px;
+    background: #003366; color: white;
+    border: none; font-size: 14px; font-weight: 700;
+    cursor: pointer; letter-spacing: 0.05em;
+    font-family: 'Source Sans 3', Arial, sans-serif;
+    transition: background 0.2s;
+  }
+
+  .disclaimer-btn:hover { background: #004488; }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+</head>
+<body>
+
+<!-- TOP BANNER -->
+<div class="top-banner">
+  <div class="top-banner-left">
+    <svg class="gov-seal" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="15" fill="none" stroke="white" stroke-width="1.5"/>
+      <circle cx="16" cy="16" r="10" fill="none" stroke="white" stroke-width="0.75"/>
+      <text x="16" y="13" font-family="serif" font-size="5" fill="white" text-anchor="middle" font-weight="bold">FEMA</text>
+      <text x="16" y="20" font-family="serif" font-size="3.5" fill="white" text-anchor="middle">IPAWS</text>
+      <text x="16" y="26" font-family="serif" font-size="2.5" fill="#aabbdd" text-anchor="middle">EST. 2006</text>
+    </svg>
+    <div>
+      <div class="top-banner-site">IPAWS — Integrated Public Alert & Warning System</div>
+      <div style="font-size:11px;color:#aabbdd">Federal Emergency Management Agency | U.S. Department of Homeland Security</div>
+    </div>
+  </div>
+  <div class="top-banner-right" id="current-time">Loading...</div>
+</div>
+
+<!-- HEADER -->
+<div class="site-header">
+  <div class="header-logo-text">
+    <div class="header-agency">U.S. Department of Homeland Security</div>
+    <div class="header-title">Emergency Alert Notification</div>
+    <div class="header-subtitle">Official Public Alert — Integrated Public Alert & Warning System (IPAWS)</div>
+  </div>
+</div>
+
+<!-- ALERT BANNER -->
+<div class="alert-banner" id="alert-banner">
+  <div class="alert-banner-dot"></div>
+  <span id="banner-text">ACTIVE EMERGENCY ALERT — IMMEDIATE ACTION REQUIRED</span>
+</div>
+
+<!-- TICKER -->
+<div class="ticker">
+  <span class="ticker-inner" id="ticker-text">Loading alert information...</span>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <div class="alert-nav">
+    <span>Viewing alert:</span>
+    <strong id="alert-num-label">1 of 5</strong>
+    <span style="flex:1"></span>
+    <button onclick="prevAlert()">← Previous</button>
+    <button onclick="nextAlert()">Next →</button>
+    <button onclick="randomAlert()" style="background:#cc0000">Random Alert</button>
+  </div>
+
+  <div class="layout">
+    <div>
+      <!-- MAIN ALERT CARD -->
+      <div class="alert-card">
+        <div class="alert-card-header">
+          <div>
+            <div class="alert-event-code" id="alert-code">TOR</div>
+            <div class="alert-event-title" id="alert-title">Loading...</div>
+          </div>
+          <div class="alert-status-badge">● Active</div>
+        </div>
+
+        <div class="alert-card-meta">
+          <div class="meta-item">
+            <div class="meta-label">Issued By</div>
+            <div class="meta-value" id="meta-issuer">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Issued At</div>
+            <div class="meta-value" id="meta-issued">—</div>
+          </div>
+          <div class="meta-item">
+            <div class="meta-label">Expires</div>
+            <div class="meta-value" id="meta-expires">—</div>
+          </div>
+        </div>
+
+        <div class="alert-card-body">
+          <div class="alert-section-title">Official Alert Message</div>
+          <div class="alert-message" id="alert-message">Loading...</div>
+
+          <div class="alert-section-title">Affected Areas</div>
+          <div class="alert-areas" id="alert-areas"></div>
+
+          <div class="alert-section-title">Protective Actions</div>
+          <div class="instructions-box" id="alert-instructions">Loading...</div>
+
+          <div class="alert-section-title">SAME Header (47 CFR §11.31)</div>
+          <div class="same-box" id="alert-same">Loading...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Alert Details</div>
+        <div class="sidebar-card-body">
+          <div class="sidebar-stat"><span class="sidebar-stat-label">Message Type</span><span class="sidebar-stat-value" id="sb-type">—</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label">Severity</span><span class="sidebar-stat-value" id="sb-severity">—</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label">Urgency</span><span class="sidebar-stat-value" id="sb-urgency">—</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label">Certainty</span><span class="sidebar-stat-value" id="sb-certainty">—</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label">Category</span><span class="sidebar-stat-value" id="sb-category">—</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label">Originator</span><span class="sidebar-stat-value" id="sb-originator">—</span></div>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">Emergency Resources</div>
+        <div class="sidebar-card-body" style="font-size:12px;line-height:2">
+          📞 Emergency: <strong>911</strong><br/>
+          📞 FEMA Helpline: <strong>1-800-621-3362</strong><br/>
+          🌐 <a href="#">ready.gov</a><br/>
+          🌐 <a href="#">weather.gov</a>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <div class="sidebar-card-header">System Status</div>
+        <div class="sidebar-card-body">
+          <div class="sidebar-stat"><span class="sidebar-stat-label">IPAWS Status</span><span class="sidebar-stat-value" style="color:green">● Operational</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label">WEA</span><span class="sidebar-stat-value" style="color:green">● Active</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label">EAS</span><span class="sidebar-stat-value" style="color:green">● Active</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label">NOAA WR</span><span class="sidebar-stat-value" style="color:green">● Active</span></div>
+          <div class="sidebar-stat"><span class="sidebar-stat-label">Last Updated</span><span class="sidebar-stat-value" id="sb-updated">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="site-footer">
+  <div>Federal Emergency Management Agency | U.S. Department of Homeland Security</div>
+  <div>Integrated Public Alert &amp; Warning System (IPAWS) | <a href="#">ipaws.gov</a> | <a href="#">ready.gov</a> | <a href="#">weather.gov</a></div>
+  <div style="margin-top:6px;color:#667799">This page is part of thatonedudeaust.com — a personal website. This is a fictional/satirical recreation for entertainment purposes.</div>
+</div>
+
+<script>
+var ALERTS = [
+  {
+    code: 'TOR',
+    title: 'Tornado Warning',
+    issuer: 'NWS Mount Holly NJ (WXR)',
+    message: 'THE NATIONAL WEATHER SERVICE IN MOUNT HOLLY HAS ISSUED A TORNADO WARNING FOR BURLINGTON COUNTY AND CAMDEN COUNTY IN NEW JERSEY UNTIL 6:45 PM EDT. AT 6:12 PM, A SEVERE THUNDERSTORM CAPABLE OF PRODUCING A TORNADO WAS LOCATED NEAR MOORESTOWN, MOVING NORTHEAST AT 40 MPH. HAZARD: TORNADO. SOURCE: RADAR INDICATED ROTATION. IMPACT: FLYING DEBRIS WILL BE DANGEROUS TO THOSE CAUGHT WITHOUT SHELTER. MOBILE HOMES WILL BE DAMAGED OR DESTROYED.',
+    areas: ['Burlington County, NJ', 'Camden County, NJ', 'Moorestown', 'Mount Holly', 'Marlton'],
+    instructions: '<strong>TAKE COVER NOW.</strong><ul><li>Move to an interior room on the lowest floor of a sturdy building.</li><li>Avoid windows.</li><li>Do not attempt to outrun a tornado in a vehicle.</li><li>If outdoors, lie flat in a ditch or low-lying area.</li><li>Mobile home residents should evacuate immediately to a sturdy structure.</li></ul>',
+    same: 'ZCZC-WXR-TOR-+034005+034007-0181812-KMHX/NWS-',
+    type: 'Alert', severity: 'Extreme', urgency: 'Immediate', certainty: 'Observed', category: 'Met', originator: 'NWS',
+    expires: '+45 min',
+  },
+  {
+    code: 'EAN',
+    title: 'Emergency Action Notification',
+    issuer: 'Primary Entry Point System (PEP)',
+    message: 'THE WHITE HOUSE HAS ISSUED AN EMERGENCY ACTION NOTIFICATION. THIS IS NOT A TEST. ALL BROADCAST STATIONS AND CABLE SYSTEMS SHALL TRANSMIT THIS EMERGENCY ACTION NOTIFICATION MESSAGE. NORMAL BROADCASTING WILL CEASE IMMEDIATELY UPON RECEIPT OF THIS MESSAGE. STAND BY FOR FURTHER INSTRUCTIONS FROM THE PRESIDENT OF THE UNITED STATES.',
+    areas: ['United States (Nationwide)'],
+    instructions: '<strong>THIS IS A NATIONAL EMERGENCY.</strong><ul><li>Tune to your local Emergency Alert System station immediately.</li><li>Follow all instructions from federal, state, and local authorities.</li><li>Do not use telephone lines except for life-threatening emergencies.</li><li>Stay indoors and await further instructions.</li></ul>',
+    same: 'ZCZC-PEP-EAN-+000000+0600-0181812-WHUS/PEP-',
+    type: 'Alert', severity: 'Extreme', urgency: 'Immediate', certainty: 'Observed', category: 'Safety', originator: 'PEP',
+    expires: '+6 hours',
+  },
+  {
+    code: 'SVR',
+    title: 'Severe Thunderstorm Warning',
+    issuer: 'NWS Mount Holly NJ (WXR)',
+    message: 'THE NATIONAL WEATHER SERVICE IN MOUNT HOLLY HAS ISSUED A SEVERE THUNDERSTORM WARNING FOR CAMDEN COUNTY AND GLOUCESTER COUNTY IN NEW JERSEY UNTIL 7:30 PM EDT. AT 6:47 PM, A SEVERE THUNDERSTORM WAS LOCATED NEAR DEPTFORD, MOVING NORTHEAST AT 30 MPH. HAZARD: 65 MPH WIND GUSTS AND QUARTER SIZE HAIL. SOURCE: RADAR INDICATED. IMPACT: HAIL DAMAGE TO VEHICLES IS EXPECTED. EXPECT WIND DAMAGE TO ROOFS, SIDING, AND TREES.',
+    areas: ['Camden County, NJ', 'Gloucester County, NJ', 'Cherry Hill', 'Deptford', 'Washington Township'],
+    instructions: '<strong>SEEK SHELTER IMMEDIATELY.</strong><ul><li>Move to an interior room on the lowest floor of a building.</li><li>Stay away from windows.</li><li>Do not shelter under trees or in open areas.</li><li>Bring pets indoors immediately.</li><li>Secure or bring in outdoor furniture.</li></ul>',
+    same: 'ZCZC-WXR-SVR-+034007+034015-0181847-KMHX/NWS-',
+    type: 'Alert', severity: 'Severe', urgency: 'Immediate', certainty: 'Observed', category: 'Met', originator: 'NWS',
+    expires: '+43 min',
+  },
+  {
+    code: 'FFW',
+    title: 'Flash Flood Warning',
+    issuer: 'NWS Mount Holly NJ (WXR)',
+    message: 'THE NATIONAL WEATHER SERVICE IN MOUNT HOLLY HAS ISSUED A FLASH FLOOD WARNING FOR CAMDEN COUNTY IN NEW JERSEY UNTIL 10:45 PM EDT. AT 10:08 PM, DOPPLER RADAR INDICATED THUNDERSTORMS PRODUCING HEAVY RAINFALL ACROSS THE WARNED AREA. BETWEEN 3 AND 4 INCHES OF RAIN HAVE ALREADY FALLEN. RANCOCAS CREEK AND COOPER RIVER ARE EXPECTED TO OVERFLOW THEIR BANKS. FLASH FLOODING IS ALREADY OCCURRING.',
+    areas: ['Camden County, NJ', 'Cherry Hill', 'Haddonfield', 'Collingswood', 'Pennsauken'],
+    instructions: '<strong>DO NOT ENTER FLOODED AREAS.</strong><ul><li>Turn around — do not drown when encountering flooded roads.</li><li>Most flood deaths occur in vehicles.</li><li>Move to higher ground immediately if in a flood-prone area.</li><li>Do not walk through moving water.</li><li>Six inches of fast-moving water can knock you off your feet.</li></ul>',
+    same: 'ZCZC-WXR-FFW-+034007-0182208-KMHX/NWS-',
+    type: 'Alert', severity: 'Severe', urgency: 'Immediate', certainty: 'Observed', category: 'Met', originator: 'NWS',
+    expires: '+37 min',
+  },
+  {
+    code: 'LAE',
+    title: 'Local Area Emergency',
+    issuer: 'Civil Authorities (CIV)',
+    message: 'CIVIL AUTHORITIES HAVE ISSUED A LOCAL AREA EMERGENCY FOR BURLINGTON COUNTY AND CAMDEN COUNTY IN NEW JERSEY UNTIL 12:00 AM EDT. A SIGNIFICANT HAZARDOUS MATERIALS INCIDENT HAS BEEN REPORTED ALONG INTERSTATE 295 NEAR THE INTERCHANGE AT ROUTE 73. EMERGENCY CREWS ARE ON SCENE. RESIDENTS WITHIN ONE MILE OF THE INCIDENT SHOULD EVACUATE IMMEDIATELY.',
+    areas: ['Burlington County, NJ', 'Camden County, NJ', 'I-295 Corridor', 'Mount Laurel', 'Voorhees'],
+    instructions: '<strong>EVACUATE IF IN THE AFFECTED AREA.</strong><ul><li>If within 1 mile of I-295/Route 73 interchange, evacuate now.</li><li>Close all windows and doors.</li><li>Turn off HVAC systems.</li><li>Do not use open flames.</li><li>Follow directions of emergency personnel on scene.</li><li>Tune to local radio for updates.</li></ul>',
+    same: 'ZCZC-CIV-LAE-+034005+034007-0182300-WCIV/CIV-',
+    type: 'Alert', severity: 'Severe', urgency: 'Immediate', certainty: 'Likely', category: 'CBRNE', originator: 'CIV',
+    expires: '+2 hours',
+  },
+];
+
+var currentAlertIdx = 0;
+
+function formatTime(date) {
+  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' EDT';
+}
+
+function formatDateTime(date) {
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' +
+    date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + ' EDT';
+}
+
+function renderAlert(idx) {
+  var a = ALERTS[idx];
+  var now = new Date();
+
+  document.getElementById('alert-code').textContent = a.code;
+  document.getElementById('alert-title').textContent = a.title;
+  document.getElementById('meta-issuer').textContent = a.issuer;
+  document.getElementById('meta-issued').textContent = formatDateTime(now);
+  document.getElementById('meta-expires').textContent = a.expires + ' from issue';
+  document.getElementById('alert-message').textContent = a.message;
+  document.getElementById('alert-instructions').innerHTML = a.instructions;
+  document.getElementById('alert-same').textContent = a.same;
+  document.getElementById('sb-type').textContent = a.type;
+  document.getElementById('sb-severity').textContent = a.severity;
+  document.getElementById('sb-urgency').textContent = a.urgency;
+  document.getElementById('sb-certainty').textContent = a.certainty;
+  document.getElementById('sb-category').textContent = a.category;
+  document.getElementById('sb-originator').textContent = a.originator;
+  document.getElementById('sb-updated').textContent = formatTime(now);
+  document.getElementById('alert-num-label').textContent = (idx + 1) + ' of ' + ALERTS.length;
+  document.getElementById('banner-text').textContent = 'ACTIVE ' + a.title.toUpperCase() + ' — IMMEDIATE ACTION REQUIRED';
+  document.getElementById('ticker-text').textContent =
+    '⚠ ACTIVE ALERT: ' + a.title + ' ⚠ Issued by: ' + a.issuer + ' ⚠ Affected: ' + a.areas.join(', ') +
+    ' ⚠ Call 911 for life-threatening emergencies ⚠ Monitor local EAS stations for updates ⚠ ' +
+    'ACTIVE ALERT: ' + a.title + ' ⚠ ';
+
+  var areasEl = document.getElementById('alert-areas');
+  areasEl.innerHTML = a.areas.map(function(area) {
+    return '<span class="area-tag">' + area + '</span>';
+  }).join('');
+}
+
+function nextAlert() {
+  currentAlertIdx = (currentAlertIdx + 1) % ALERTS.length;
+  renderAlert(currentAlertIdx);
+}
+
+function prevAlert() {
+  currentAlertIdx = (currentAlertIdx - 1 + ALERTS.length) % ALERTS.length;
+  renderAlert(currentAlertIdx);
+}
+
+function randomAlert() {
+  var idx;
+  do { idx = Math.floor(Math.random() * ALERTS.length); } while (idx === currentAlertIdx && ALERTS.length > 1);
+  currentAlertIdx = idx;
+  renderAlert(currentAlertIdx);
+}
+
+// Clock
+function updateClock() {
+  document.getElementById('current-time').textContent = new Date().toUTCString();
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+renderAlert(0);
+</script>
+
+</body>
+</html>
