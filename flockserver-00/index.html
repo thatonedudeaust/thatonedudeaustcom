@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>flockserver-00 — Live View</title>
+  <script src="/supabase.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+      color: #1c2630;
+      background: #e9edf1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      background: #1b2733;
+      color: #e8edf2;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 0 20px;
+      height: 48px;
+      flex-shrink: 0;
+    }
+
+    .brand { font-weight: 600; font-size: 15px; letter-spacing: 0.02em; }
+
+    .tabs { display: flex; gap: 2px; height: 100%; }
+
+    .tab {
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #9fb0c0;
+      font: inherit;
+      padding: 0 14px;
+      cursor: pointer;
+    }
+    .tab:hover { color: #ffffff; }
+    .tab.active { color: #ffffff; border-bottom-color: #4c8dff; }
+
+    .topbar-right {
+      margin-left: auto;
+      font-size: 12px;
+      color: #9fb0c0;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    /* LAYOUT */
+    .layout {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .sidebar {
+      background: #ffffff;
+      border-right: 1px solid #d3d9df;
+      display: flex;
+      flex-direction: column;
+      position: sticky;
+      top: 0;
+      height: calc(100vh - 48px);
+    }
+
+    .side-head { padding: 12px; border-bottom: 1px solid #e3e8ec; }
+
+    .side-head input {
+      width: 100%;
+      padding: 7px 10px;
+      border: 1px solid #c9d1d9;
+      border-radius: 4px;
+      font: inherit;
+      color: #1c2630;
+      background: #ffffff;
+    }
+    .side-head input:focus { outline: 2px solid #4c8dff; outline-offset: -1px; }
+
+    .side-count {
+      padding: 8px 14px;
+      font-size: 12px;
+      color: #5c6b79;
+      background: #f7f9fa;
+      border-bottom: 1px solid #e3e8ec;
+    }
+
+    #camera-list { list-style: none; overflow-y: auto; flex: 1; }
+
+    .cam {
+      display: flex;
+      gap: 10px;
+      padding: 11px 14px;
+      border-bottom: 1px solid #eef1f4;
+      cursor: pointer;
+    }
+    .cam:hover { background: #f3f6f9; }
+    .cam.active { background: #e6efff; box-shadow: inset 3px 0 0 #2f6fe0; }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      margin-top: 6px;
+      flex-shrink: 0;
+      background: #9aa5b1;
+    }
+    .dot.active { background: #2e9d4f; }
+    .dot.unverified { background: #d99a1c; }
+
+    .cam-id { font-size: 12px; color: #5c6b79; font-variant-numeric: tabular-nums; }
+    .cam-name { font-weight: 600; }
+    .cam-sub { font-size: 12px; color: #5c6b79; }
+    .tag-nofeed {
+      display: inline-block;
+      margin-left: 6px;
+      font-size: 11px;
+      color: #8a5a00;
+      background: #fff3d6;
+      border: 1px solid #ecd28f;
+      border-radius: 3px;
+      padding: 0 5px;
+    }
+
+    .empty-note { padding: 24px 14px; color: #5c6b79; font-size: 13px; }
+
+    /* STAGE */
+    .stage { padding: 20px; min-width: 0; }
+
+    .player, .details, .tile {
+      background: #ffffff;
+      border: 1px solid #d3d9df;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .player-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      background: #1b2733;
+      color: #e8edf2;
+      font-size: 12px;
+    }
+    .player-bar .title { font-weight: 600; }
+    .player-bar .right { display: flex; align-items: center; gap: 14px; font-variant-numeric: tabular-nums; color: #b7c4d1; }
+
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #ff7b7b;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+    }
+    .live::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #ff4d4d;
+    }
+
+    .video { position: relative; aspect-ratio: 16 / 9; background: #000000; }
+    .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+
+    .placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      color: #8a97a4;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn {
+      font: inherit;
+      font-size: 13px;
+      padding: 6px 12px;
+      border: 1px solid #c3ccd5;
+      border-radius: 4px;
+      background: #ffffff;
+      color: #1c2630;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .btn:hover { background: #f3f6f9; }
+
+    .hint { font-size: 12px; color: #5c6b79; margin-left: auto; }
+
+    .details { margin-top: 16px; }
+    .details h2 {
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 14px;
+      background: #f7f9fa;
+      border-bottom: 1px solid #e3e8ec;
+    }
+
+    .dl { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); }
+    .dl > div { padding: 10px 14px; border-bottom: 1px solid #eef1f4; border-right: 1px solid #eef1f4; }
+    .dl .k { font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #6b7886; }
+    .dl .v { font-size: 14px; word-break: break-word; }
+
+    /* GRID VIEW */
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    .tile { position: relative; cursor: pointer; }
+    .tile .click { position: absolute; inset: 0; z-index: 2; }
+    .tile iframe { pointer-events: none; }
+    .grid-note { font-size: 12px; color: #5c6b79; margin-bottom: 12px; }
+
+    footer {
+      padding: 10px 20px;
+      font-size: 12px;
+      color: #5c6b79;
+      border-top: 1px solid #d3d9df;
+      background: #f7f9fa;
+    }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; max-height: 280px; border-right: none; border-bottom: 1px solid #d3d9df; }
+      .grid { grid-template-columns: 1fr; }
+      .stage { padding: 14px; }
+      .topbar { gap: 14px; padding: 0 14px; }
+      .topbar-right { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">flockserver-00</div>
+  <nav class="tabs">
+    <button class="tab active" id="tab-single" type="button">Live view</button>
+    <button class="tab" id="tab-grid" type="button">Grid</button>
+  </nav>
+  <div class="topbar-right" id="clock"></div>
+</header>
+
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="side-head">
+      <input type="search" id="search" placeholder="Search cameras" autocomplete="off" />
+    </div>
+    <div class="side-count" id="count">Loading cameras...</div>
+    <ul id="camera-list"></ul>
+  </aside>
+
+  <section class="stage">
+
+    <!-- SINGLE VIEW -->
+    <div id="view-single">
+      <div class="player">
+        <div class="player-bar">
+          <div class="title" id="bar-title">No camera selected</div>
+          <div class="right">
+            <span class="live" id="bar-live" hidden>LIVE</span>
+            <span class="stamp"></span>
+          </div>
+        </div>
+        <div class="video" id="video">
+          <iframe id="frame" title="Camera feed" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin" hidden></iframe>
+          <div class="placeholder" id="placeholder">Select a camera from the list to open its live view.</div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="button" id="btn-full" hidden>Fullscreen</button>
+        <a class="btn" id="btn-source" href="#" target="_blank" rel="noopener noreferrer" hidden>Open source stream</a>
+        <span class="hint" id="hint" hidden>If the feed does not load, the stream may be offline or embedding may be disabled by its owner.</span>
+      </div>
+
+      <div class="details" id="details" hidden>
+        <h2>Camera details</h2>
+        <div class="dl" id="details-grid"></div>
+      </div>
+    </div>
+
+    <!-- GRID VIEW -->
+    <div id="view-grid" hidden>
+      <div class="grid-note" id="grid-note"></div>
+      <div class="grid" id="grid"></div>
+    </div>
+
+  </section>
+</div>
+
+<footer>
+  Simulated interface. Video feeds are third-party public webcams and are not affiliated with this site.
+</footer>
+
+<script>
+  var SUPABASE_URL = 'https://rwsythvgrelvkldszdac.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_H1x2cBYCi86dKVynWe96oA_zUQKw1x3';
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  var records = [];
+  var selectedId = null;
+  var mode = 'single';
+  var currentSrc = '';
+
+  function esc(value) {
+    if (value === null || value === undefined || value === '') return '';
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function validStream(id) {
+    return typeof id === 'string' && /^[A-Za-z0-9_-]{6,20}$/.test(id);
+  }
+
+  function embedUrl(id, controls) {
+    return 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) +
+      '?autoplay=1&mute=1&rel=0&modestbranding=1&playsinline=1&controls=' + (controls ? 1 : 0);
+  }
+
+  function sourceUrl(id) {
+    return 'https://www.youtube.com/watch?v=' + encodeURIComponent(id);
+  }
+
+  function fmtDate(value) {
+    if (!value) return '';
+    var d = new Date(value + 'T00:00:00');
+    if (isNaN(d.getTime())) return '';
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  }
+
+  function stamp() {
+    return new Date().toLocaleString('en-US', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false, timeZoneName: 'short'
+    });
+  }
+
+  function tick() {
+    var s = stamp();
+    document.getElementById('clock').textContent = s;
+    document.querySelectorAll('.stamp').forEach(function(el) { el.textContent = s; });
+  }
+
+  function getFiltered() {
+    var q = document.getElementById('search').value.trim().toLowerCase();
+    if (!q) return records;
+    return records.filter(function(r) {
+      var hay = [r.camera_id, r.location, r.city, r.state, r.direction, r.camera_type, r.operator, r.notes]
+        .join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+  }
+
+  function findRecord(id) {
+    for (var i = 0; i < records.length; i++) {
+      if (records[i].camera_id === id) return records[i];
+    }
+    return null;
+  }
+
+  /* ---------- LIST ---------- */
+  function renderList() {
+    var list = getFiltered();
+    var ul = document.getElementById('camera-list');
+    document.getElementById('count').textContent = list.length + ' of ' + records.length + ' camera' + (records.length === 1 ? '' : 's');
+
+    if (list.length === 0) {
+      ul.innerHTML = '<li class="empty-note">' + (records.length === 0 ? 'No cameras have been added yet.' : 'No cameras match your search.') + '</li>';
+      return;
+    }
+
+    ul.innerHTML = list.map(function(r) {
+      var status = (r.status || 'unverified').toLowerCase();
+      var feed = validStream(r.stream_id) ? '' : '<span class="tag-nofeed">No feed</span>';
+      var place = [r.city, r.state].filter(Boolean).join(', ');
+      return '<li class="cam' + (r.camera_id === selectedId ? ' active' : '') + '" data-id="' + esc(r.camera_id) + '">' +
+        '<span class="dot ' + esc(status) + '"></span>' +
+        '<div>' +
+          '<div class="cam-id">' + esc(r.camera_id) + feed + '</div>' +
+          '<div class="cam-name">' + esc(r.location) + '</div>' +
+          '<div class="cam-sub">' + esc(place) + '</div>' +
+        '</div>' +
+      '</li>';
+    }).join('');
+  }
+
+  /* ---------- SINGLE VIEW ---------- */
+  function setFrame(src) {
+    var frame = document.getElementById('frame');
+    if (src === currentSrc) return;
+    currentSrc = src;
+    if (src) {
+      frame.src = src;
+      frame.hidden = false;
+    } else {
+      frame.removeAttribute('src');
+      frame.hidden = true;
+    }
+  }
+
+  function renderSingle() {
+    var r = findRecord(selectedId);
+    var placeholder = document.getElementById('placeholder');
+    var details = document.getElementById('details');
+    var fullBtn = document.getElementById('btn-full');
+    var srcBtn = document.getElementById('btn-source');
+    var hint = document.getElementById('hint');
+    var live = document.getElementById('bar-live');
+
+    if (!r) {
+      setFrame('');
+      placeholder.hidden = false;
+      placeholder.textContent = 'Select a camera from the list to open its live view.';
+      document.getElementById('bar-title').textContent = 'No camera selected';
+      live.hidden = true;
+      details.hidden = true;
+      fullBtn.hidden = true;
+      srcBtn.hidden = true;
+      hint.hidden = true;
+      return;
+    }
+
+    document.getElementById('bar-title').textContent = r.camera_id + '  \u00B7  ' + (r.location || '');
+
+    if (validStream(r.stream_id)) {
+      setFrame(embedUrl(r.stream_id, true));
+      placeholder.hidden = true;
+      live.hidden = false;
+      fullBtn.hidden = false;
+      srcBtn.hidden = false;
+      srcBtn.href = sourceUrl(r.stream_id);
+      hint.hidden = false;
+    } else {
+      setFrame('');
+      placeholder.hidden = false;
+      placeholder.textContent = 'No feed is configured for this camera.';
+      live.hidden = true;
+      fullBtn.hidden = true;
+      srcBtn.hidden = true;
+      hint.hidden = true;
+    }
+
+    var coords = (r.lat !== null && r.lat !== undefined && r.lon !== null && r.lon !== undefined)
+      ? Number(r.lat).toFixed(4) + ', ' + Number(r.lon).toFixed(4) : '';
+
+    var fields = [
+      ['Camera ID', r.camera_id],
+      ['Location', r.location],
+      ['City / State', [r.city, r.state].filter(Boolean).join(', ')],
+      ['Facing', r.direction],
+      ['Type', r.camera_type],
+      ['Operator', r.operator],
+      ['Status', r.status ? r.status.charAt(0).toUpperCase() + r.status.slice(1) : ''],
+      ['Coordinates', coords],
+      ['Last verified', fmtDate(r.last_verified)],
+      ['Notes', r.notes]
+    ];
+
+    document.getElementById('details-grid').innerHTML = fields.map(function(f) {
+      return '<div><div class="k">' + esc(f[0]) + '</div><div class="v">' + (esc(f[1]) || '\u2014') + '</div></div>';
+    }).join('');
+    details.hidden = false;
+  }
+
+  /* ---------- GRID VIEW ---------- */
+  function renderGrid() {
+    var feeds = getFiltered().filter(function(r) { return validStream(r.stream_id); });
+    var shown = feeds.slice(0, 4);
+    var note = document.getElementById('grid-note');
+    var grid = document.getElementById('grid');
+
+    if (shown.length === 0) {
+      note.textContent = 'No cameras with an active feed to display.';
+      grid.innerHTML = '';
+      return;
+    }
+
+    note.textContent = 'Showing ' + shown.length + ' of ' + feeds.length + ' camera feeds. Select a tile to open it in Live view.';
+    grid.innerHTML = shown.map(function(r) {
+      return '<div class="tile" data-id="' + esc(r.camera_id) + '">' +
+        '<div class="player-bar">' +
+          '<div class="title">' + esc(r.camera_id) + '  \u00B7  ' + esc(r.location) + '</div>' +
+          '<div class="right"><span class="live">LIVE</span></div>' +
+        '</div>' +
+        '<div class="video">' +
+          '<iframe title="Camera feed" src="' + esc(embedUrl(r.stream_id, false)) + '" allow="autoplay; encrypted-media; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin"></iframe>' +
+        '</div>' +
+        '<div class="click"></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  /* ---------- MODE + SELECTION ---------- */
+  function setMode(m) {
+    mode = m;
+    document.getElementById('tab-single').classList.toggle('active', m === 'single');
+    document.getElementById('tab-grid').classList.toggle('active', m === 'grid');
+    document.getElementById('view-single').hidden = (m !== 'single');
+    document.getElementById('view-grid').hidden = (m !== 'grid');
+
+    if (m === 'grid') {
+      setFrame('');
+      renderGrid();
+    } else {
+      document.getElementById('grid').innerHTML = '';
+      renderSingle();
+    }
+  }
+
+  function selectCamera(id) {
+    selectedId = id;
+    window.history.replaceState(null, '', '#' + encodeURIComponent(id));
+    renderList();
+    setMode('single');
+  }
+
+  /* ---------- EVENTS ---------- */
+  document.getElementById('camera-list').addEventListener('click', function(e) {
+    var li = e.target.closest('li.cam');
+    if (li && li.dataset.id) selectCamera(li.dataset.id);
+  });
+
+  document.getElementById('grid').addEventListener('click', function(e) {
+    var tile = e.target.closest('.tile');
+    if (tile && tile.dataset.id) selectCamera(tile.dataset.id);
+  });
+
+  document.getElementById('tab-single').addEventListener('click', function() { setMode('single'); });
+  document.getElementById('tab-grid').addEventListener('click', function() { setMode('grid'); });
+
+  document.getElementById('search').addEventListener('input', function() {
+    renderList();
+    if (mode === 'grid') renderGrid();
+  });
+
+  document.getElementById('btn-full').addEventListener('click', function() {
+    var el = document.getElementById('video');
+    if (el.requestFullscreen) el.requestFullscreen();
+  });
+
+  /* ---------- LOAD ---------- */
+  async function loadRecords() {
+    var result = await sb.from('flock_cameras').select('*').order('camera_id', { ascending: true });
+
+    if (result.error) {
+      document.getElementById('count').textContent = 'Unable to load cameras.';
+      document.getElementById('camera-list').innerHTML = '<li class="empty-note">Unable to load camera records. Try again later.</li>';
+      return;
+    }
+
+    records = result.data || [];
+    renderList();
+
+    var hash = decodeURIComponent((window.location.hash || '').slice(1));
+    if (hash && findRecord(hash)) {
+      selectCamera(hash);
+    } else {
+      renderSingle();
+    }
+  }
+
+  setInterval(tick, 1000);
+  tick();
+  loadRecords();
+</script>
+
+</body>
+</html>
